@@ -21,88 +21,6 @@ def connect(host, port, db, user=None, pw=None):
         _client.test.authenticate(user, pw)
     _db = _client[db]
 
-_op_table = {
-    "<": "$lt",
-    ">": "$gt",
-    "<=": "$lte",
-    ">=": "$gte",
-    "!=": "$ne",
-}
-
-_split_chars = "<>=! "
-
-def _split_exp(exp):
-    exp = exp.strip()
-    splt = []
-    for i in range(len(exp)):
-        if exp[i] in _split_chars:
-            splt.append(exp[:i].strip())
-            break
-    if len(splt) > 0:
-        for j in range(i, len(exp)):
-            if exp[j] not in _split_chars:
-                if len(exp[i:j].strip()):
-                    splt.append(exp[i:j].strip())
-                break
-        if len(splt) > 1:
-            splt.append(exp[j:].strip())
-        else:
-            splt.append(exp[i:].strip())
-    else:
-        splt.append(exp)
-    return splt
-
-def andify(a, k, b):
-    ands = []
-    for key, val in a.items():
-        ands.append({key: val})
-    ands.append({k: b})
-    return {'$and': tuple(ands)}
-
-def _parse_arg(arg):
-    try:
-        return int(arg)
-    except:
-        try:
-            return float(arg)
-        except:
-            return arg
-
-def _parse_args(args):
-    if type(args) != list:
-        args = list(args)
-    q = {}
-    while len(args):
-        arg = args.pop(0)
-        filt_op = _split_exp(arg)
-        if len(filt_op) == 1:
-            q[filt_op[0]] = {'$exists': True}
-        else:
-            filt, op = filt_op[:2]
-            if op == "not":
-                if filt in q:
-                    q = andify(q, filt, {'$exists': False})
-                else:
-                    q[filt] = {'$exists': False}
-            else:
-                if len(filt_op) == 3:
-                    arg2 = _parse_arg(filt_op[2])
-                else:
-                    arg2 = args.pop(0)
-                if op == "==":
-                    if filt in q:
-                        q = andify(q, filt, arg2)
-                    else:
-                        q[filt] = arg2
-                elif op in _op_table:
-                    if filt in q:
-                        q = andify(q, filt, {_op_table[op]: arg2})
-                    else:
-                        q[filt] = {_op_table[op]: arg2}
-                else:
-                    raise Exception("ERROR: unknown operation in _parse_args: %s" % op)
-    return q
-
 def query(db, *filter, **kw):
 #     print "args:", filter
 #     print "keywords:", kw
@@ -194,10 +112,89 @@ def upsert(*args, **kw):
     kw['_UPSERT_'] = True
     return update(*args, **kw)
 
-def test():
+_op_table = {
+    "<": "$lt",
+    ">": "$gt",
+    "<=": "$lte",
+    ">=": "$gte",
+    "!=": "$ne",
+}
+
+_split_chars = "<>=! "
+
+def _split_exp(exp):
+    exp = exp.strip()
+    splt = []
+    for i in range(len(exp)):
+        if exp[i] in _split_chars:
+            splt.append(exp[:i].strip())
+            break
+    if len(splt) > 0:
+        for j in range(i, len(exp)):
+            if exp[j] not in _split_chars:
+                if len(exp[i:j].strip()):
+                    splt.append(exp[i:j].strip())
+                break
+        if len(splt) > 1:
+            splt.append(exp[j:].strip())
+        else:
+            splt.append(exp[i:].strip())
+    else:
+        splt.append(exp)
+    return splt
+
+def andify(a, k, b):
+    ands = []
+    for key, val in a.items():
+        ands.append({key: val})
+    ands.append({k: b})
+    return {'$and': tuple(ands)}
+
+def _parse_arg(arg):
+    try:
+        return int(arg)
+    except:
+        try:
+            return float(arg)
+        except:
+            return arg
+
+def _parse_args(args):
+    if type(args) != list:
+        args = list(args)
+    q = {}
+    while len(args):
+        arg = args.pop(0)
+        filt_op = _split_exp(arg)
+        if len(filt_op) == 1:
+            q[filt_op[0]] = {'$exists': True}
+        else:
+            filt, op = filt_op[:2]
+            if op == "not":
+                if filt in q:
+                    q = andify(q, filt, {'$exists': False})
+                else:
+                    q[filt] = {'$exists': False}
+            else:
+                if len(filt_op) == 3:
+                    arg2 = _parse_arg(filt_op[2])
+                else:
+                    arg2 = args.pop(0)
+                if op == "==":
+                    if filt in q:
+                        q = andify(q, filt, arg2)
+                    else:
+                        q[filt] = arg2
+                elif op in _op_table:
+                    if filt in q:
+                        q = andify(q, filt, {_op_table[op]: arg2})
+                    else:
+                        q[filt] = {_op_table[op]: arg2}
+                else:
+                    raise Exception("ERROR: unknown operation in _parse_args: %s" % op)
+    return q
+
+if __name__ == "__main__":   
     from pprint import pprint
     import mongolib
     print mongolib.update
-
-if __name__ == "__main__":   
-    test()
