@@ -12,14 +12,17 @@
 # becomes:
 #    mongolib> query(db.test, "foo==bar", fields=('foo', 'ban'))
 #
-import pymongo
+import pymongo, traceback
 
 def connect(host, port, db, user=None, pw=None):
-    global _client, _db
-    _client = pymongo.MongoClient(host, port)
-    if user:
-        _client.test.authenticate(user, pw)
-    _db = _client[db]
+    try:
+        _client = pymongo.MongoClient(host, port)
+        if user:
+            _client.test.authenticate(user, pw)
+        _db = _client[db]
+        return _db
+    except:
+        return traceback.format_exc()
 
 def query(db, *filter, **kw):
 #     print "args:", filter
@@ -68,8 +71,8 @@ def query(db, *filter, **kw):
 # update(db.table, "ass =", 4, bar=14, _UPSERT_=True, _MULTI_=True)
 #
 def update(db, *filter, **kw):
-    print "args:", filter
-    print "kw:", kw
+#     print "args:", filter
+#     print "kw:", kw
     q = {}
     if len(filter) and type(filter[0]) == dict:
         q = filter[0]
@@ -82,17 +85,18 @@ def update(db, *filter, **kw):
     if '_MULTI_' in kw:
         del kw['_MULTI_']
         multi = True
-#     for key, value in kw.items():
-#         kw[key] = value
     if kw == {}:
         kw = dict(q)
         q = {'_id': kw['_id']}
         del kw['_id']
     up = {'$set': kw}
-    print "query:", q
-    print "update:", up
-    ret = db.update(q, up, upsert = upsert, multi = multi)
-#     print ret
+#     print "query:", q
+#     print "update:", up
+    if q == {}:
+        return db.insert(kw)
+    else:
+        ret = db.update(q, up, upsert = upsert, multi = multi)
+#     print ret, type(ret)
     if ret['err']:
         pass
     elif ret['updatedExisting']:
