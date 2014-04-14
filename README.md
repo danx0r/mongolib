@@ -13,6 +13,8 @@ Simple syntax for mongo query & update.
 
     mongolib> update(db.test, "foo==bar", foo='baz')
 
+and
+
     PyMongo> db.test.find({'foo': 'bar'}, fields={'foo':True, 'ban':True})
 
  becomes:
