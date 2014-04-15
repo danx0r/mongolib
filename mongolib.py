@@ -104,8 +104,9 @@ def update(db, *filter, **kw):
         multi = True
     if kw == {}:
         kw = dict(q)
-        q = {'_id': kw['_id']}
-        del kw['_id']
+        if '_id' in q:
+            q = {'_id': kw['_id']}
+            del kw['_id']
     up = {'$set': kw}
 #     print "query:", q
 #     print "update:", up
