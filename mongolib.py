@@ -29,7 +29,7 @@ becomes:
 
 """
 
-import pymongo, traceback
+import pymongo, traceback, re
 
 def connect(host, port, db, user=None, pw=None):
     try:
@@ -123,7 +123,10 @@ def update(db, *filter, **kw):
         if 'upserted' in ret:
             ret = ret['upserted']
         else:
-            ret = ret['n']
+            if ret['n'] == 1:
+                ret = "new"
+            else:
+                ret = ret['n']
     return ret
 
 def upmulti(*args, **kw):
@@ -142,7 +145,7 @@ _op_table = {
     "!=": "$ne",
 }
 
-_split_chars = "<>=! "
+_split_chars = "<>=!~ "
 
 def _split_exp(exp):
     exp = exp.strip()
@@ -203,6 +206,18 @@ def _parse_args(args):
                 else:
                     arg2 = args.pop(0)
                 if op == "==":
+                    if filt in q:
+                        q = andify(q, filt, arg2)
+                    else:
+                        q[filt] = arg2
+                elif op == "~=":
+                    arg2 = re.compile(arg2)
+                    if filt in q:
+                        q = andify(q, filt, arg2)
+                    else:
+                        q[filt] = arg2
+                elif op == "~~":
+                    arg2 = re.compile(arg2, re.IGNORECASE)
                     if filt in q:
                         q = andify(q, filt, arg2)
                     else:
