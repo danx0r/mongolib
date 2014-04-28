@@ -46,10 +46,10 @@ def run(*args, **kw):
             while time.time() < t0 + timeout:
                 line = proc.stdout.readline()
                 out += line
-                line = proc.stderr.readline()
-                err += line
+                line2 = proc.stderr.readline()
+                err += line2
                 i = 0
-                while line != "":
+                while line != "" and line2 != "":
                     if showoutput:
                         sys.stdout.write(line)
                     i += 1
@@ -64,10 +64,11 @@ def run(*args, **kw):
                     #get all output
                     line = proc.stdout.readline()
                     out += line
-                    while line != "":
+                    line2 = proc.stderr.readline()
+                    err += line2
+                    while line != "" and line2 != "":
                         if showoutput:
                             sys.stdout.write(line)
-                        sys.stdout.write(line)
                         line = proc.stdout.readline()
                         out += line
                         line = proc.stderr.readline()
