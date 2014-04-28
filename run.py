@@ -78,8 +78,11 @@ def run(*args, **kw):
 
 if __name__ == "__main__":
     print "test run.py"
-    cmd = "ls", "-rltR", "/home/dbm/"
-    s, err = run(cmd, timeout=2, showoutput=True)
+#     cmd = "ls", "-rltR", "/home/dbm/"
+#     cmd = "cp", "run.py", "/"
+    cmd = ("wget", '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:21.0) Gecko/20100101 Firefox/21.0"',
+         "-O", "test.html", "http://ipv4.google.com/sorry/IndexRedirect?continue=http://webcache.googleusercontent.com/search%3Fq%3Dcache:www.linkedin.com/in/sertacuzun")
+    s, err = run(cmd, timeout=2, showoutput=False)
     print "output----------\n", s
     print "end output------"
     print "completed:", err
