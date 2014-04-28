@@ -36,14 +36,18 @@ def run(*args, **kw):
         if not timeout:
             kw['stderr'] = subprocess.STDOUT
             out = subprocess.check_output(*args, **kw)
+            err = ""
         else:
-            proc = subprocess.Popen(*args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            proc = subprocess.Popen(*args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             t0 = time.time()
             out = ""
+            err = ""
             complete = False
             while time.time() < t0 + timeout:
                 line = proc.stdout.readline()
                 out += line
+                line = proc.stderr.readline()
+                err += line
                 i = 0
                 while line != "":
                     if showoutput:
@@ -53,6 +57,8 @@ def run(*args, **kw):
                         break
                     line = proc.stdout.readline()
                     out += line
+                    line = proc.stderr.readline()
+                    err += line
                 if proc.poll() != None:
                     complete = True
                     #get all output
@@ -64,6 +70,8 @@ def run(*args, **kw):
                         sys.stdout.write(line)
                         line = proc.stdout.readline()
                         out += line
+                        line = proc.stderr.readline()
+                        err += line
                     sys.stdout.flush()
                     break
 ##                sys.stdout.write(".")
@@ -74,7 +82,7 @@ def run(*args, **kw):
 
     except subprocess.CalledProcessError as e:
         out = e.output
-    return out, complete
+    return out, err, complete
 
 if __name__ == "__main__":
     print "test run.py"
