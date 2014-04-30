@@ -29,7 +29,7 @@ becomes:
 
 """
 
-import pymongo, traceback, re
+import pymongo, sys, traceback, re
 
 def connect(host, port, db, user=None, pw=None):
     global _db, _dbname, _host, _port, _user, _pw
@@ -92,11 +92,11 @@ def _query(collection, *filter, **kw):
 def query(*args, **kw):
     global _db
     try:
-        _query(*args, **kw)
+        return _query(*args, **kw)
     except:
-        print >> sys.stderr, "DEBUG mongolib.query connection lost, attempting reconnect", args, kw
+        print >> sys.stderr, "WARNING mongolib.query connection lost, attempting reconnect", args, kw
         _db = connect(_host, _port, _dbname, _user, _pw)
-        _query(*args, **kw)
+        return _query(*args, **kw)
 
 #
 # args are filter, keywords are update
@@ -149,11 +149,11 @@ def _update(collection, *filter, **kw):
 def update(*args, **kw):
     global _db
     try:
-        _update(*args, **kw)
+        return _update(*args, **kw)
     except:
-        print >> sys.stderr, "DEBUG mongolib.update connection lost, attempting reconnect", args, kw
+        print >> sys.stderr, "WARNING mongolib.update connection lost, attempting reconnect", args, kw
         _db = connect(_host, _port, _dbname, _user, _pw)
-        _update(*args, **kw)
+        return _update(*args, **kw)
 
 def upmulti(*args, **kw):
     kw['_MULTI_'] = True
