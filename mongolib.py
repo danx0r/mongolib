@@ -32,18 +32,25 @@ becomes:
 import pymongo, traceback, re
 
 def connect(host, port, db, user=None, pw=None):
+    global _db, _dbname, _host, _port, _user, _pw
+    _host = host
+    _port = port
+    _dbname = db
+    _user = user
+    _pw = pw
     try:
         _client = pymongo.MongoClient(host, port)
         if user:
             _client.test.authenticate(user, pw)
         _db = _client[db]
-        return _db
+        return True
     except:
         return traceback.format_exc()
 
-def query(db, *filter, **kw):
+def _query(collection, *filter, **kw):
 #     print "args:", filter
 #     print "keywords:", kw
+    db = _db[collection]
     limit = kw['limit'] if 'limit' in kw else None
     fields = kw['fields'] if 'fields' in kw else ()
     exclude = kw['exclude'] if 'exclude' in kw else ()
@@ -82,14 +89,24 @@ def query(db, *filter, **kw):
         cur = cur.sort([(asc, 1)])
     return cur
 
+def query(*args, **kw):
+    global _db
+    try:
+        _query(*args, **kw)
+    except:
+        print >> sys.stderr, "DEBUG mongolib.query connection lost, attempting reconnect", args, kw
+        _db = connect(_host, _port, _dbname, _user, _pw)
+        _query(*args, **kw)
+
 #
 # args are filter, keywords are update
 #
 # update(db.table, "ass =", 4, bar=14, _UPSERT_=True, _MULTI_=True)
 #
-def update(db, *filter, **kw):
+def _update(collection, *filter, **kw):
 #     print "args:", filter
 #     print "kw:", kw
+    db = _db[collection]
     q = {}
     if len(filter) and type(filter[0]) == dict:
         q = filter[0]
@@ -128,6 +145,15 @@ def update(db, *filter, **kw):
             else:
                 ret = ret['n']
     return ret
+
+def update(*args, **kw):
+    global _db
+    try:
+        _update(*args, **kw)
+    except:
+        print >> sys.stderr, "DEBUG mongolib.update connection lost, attempting reconnect", args, kw
+        _db = connect(_host, _port, _dbname, _user, _pw)
+        _update(*args, **kw)
 
 def upmulti(*args, **kw):
     kw['_MULTI_'] = True
