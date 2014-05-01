@@ -31,6 +31,10 @@ becomes:
 
 import pymongo, sys, traceback, re
 
+
+RECONNECT_TRIES = 10
+RECONNECT_WAIT = 30
+
 def connect(host, port, db, user=None, pw=None):
     global _db, _dbname, _host, _port, _user, _pw
     _host = host
@@ -90,13 +94,22 @@ def _query(collection, *filter, **kw):
     return cur
 
 def query(*args, **kw):
-    global _db
     try:
         return _query(*args, **kw)
     except:
-        print >> sys.stderr, "WARNING mongolib.query connection lost, attempting reconnect", args, kw
-        _db = connect(_host, _port, _dbname, _user, _pw)
-        return _query(*args, **kw)
+        exc = traceback.format_exc()
+        if not ("pymongo.errors" in exc and "not valid at server" in exc):
+            print >> sys.stderr, exc
+            raise Exception("mongolib quit")
+        for i in range(RECONNECT_TRIES):
+            print >> sys.stderr, "WARNING mongolib.query connection lost, attempting reconnect try %d" % i, args, kw
+            err = connect(_host, _port, _dbname, _user, _pw)
+            if err == True:
+                return _query(*args, **kw)
+            print >> sys.stderr, err
+            time.sleep(RECONNECT_WAIT)
+        print >> sys.stderr, "ERROR mongolib.query could not reconnect, exiting"
+        raise Exception("mongolib quit")
 
 #
 # args are filter, keywords are update
@@ -147,13 +160,22 @@ def _update(collection, *filter, **kw):
     return ret
 
 def update(*args, **kw):
-    global _db
     try:
         return _update(*args, **kw)
     except:
-        print >> sys.stderr, "WARNING mongolib.update connection lost, attempting reconnect", args, kw
-        _db = connect(_host, _port, _dbname, _user, _pw)
-        return _update(*args, **kw)
+        exc = traceback.format_exc()
+        if not ("pymongo.errors" in exc and "not valid at server" in exc):
+            print >> sys.stderr, exc
+            raise Exception("mongolib quit")
+        for i in range(RECONNECT_TRIES):
+            print >> sys.stderr, "WARNING mongolib.update connection lost, attempting reconnect try %d" % i, args, kw
+            err = connect(_host, _port, _dbname, _user, _pw)
+            if err == True:
+                return _update(*args, **kw)
+            print >> sys.stderr, err
+            time.sleep(RECONNECT_WAIT)
+        print >> sys.stderr, "ERROR mongolib.update could not reconnect, exiting"
+        raise Exception("mongolib quit")
 
 def upmulti(*args, **kw):
     kw['_MULTI_'] = True
