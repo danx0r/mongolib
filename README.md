@@ -11,7 +11,7 @@ Simple syntax for mongo query & update.
 
  becomes:
 
-    mongolib> update(db.test, "foo==bar", foo='baz')
+    mongolib> update("test", "foo==bar", foo='baz')
 
 and
 
@@ -19,5 +19,7 @@ and
 
  becomes:
 
-    mongolib> query(db.test, "foo==bar", fields=('foo', 'ban'))
+    mongolib> query("test", "foo==bar", fields=('foo', 'ban'))
 
+
+you connect using connect(host, port, db, user=None, pw=None) -- the db is remembered for subsequent calls.
