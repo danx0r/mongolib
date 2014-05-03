@@ -26,6 +26,11 @@ you connect using:
 
     connect(host, port, db, user=None, pw=None)
 
-The db is remembered for subsequent calls.
+The db is remembered for subsequent calls. comparisons include typical operators,
+plus ~= for regex, ~~ for case-insensitive regex. Example:
 
-Methods include upsert, upmulti
+    query("test", "foo~~BAR")
+    #will return all docs where 'bar' is in foo, with any case
+
+Other methods include upsert, upmulti
+Todo: remove(), safe_drop()
