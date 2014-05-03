@@ -22,4 +22,8 @@ and
     mongolib> query("test", "foo==bar", fields=('foo', 'ban'))
 
 
-you connect using connect(host, port, db, user=None, pw=None) -- the db is remembered for subsequent calls.
+you connect using:
+
+    connect(host, port, db, user=None, pw=None)
+
+The db is remembered for subsequent calls.
