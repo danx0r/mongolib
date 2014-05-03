@@ -27,3 +27,5 @@ you connect using:
     connect(host, port, db, user=None, pw=None)
 
 The db is remembered for subsequent calls.
+
+Methods include upsert, upmulti
