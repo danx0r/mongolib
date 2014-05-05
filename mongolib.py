@@ -183,6 +183,14 @@ def upsert(*args, **kw):
     kw['_UPSERT_'] = True
     return update(*args, **kw)
 
+def uppush(*args, **kw):
+    for key in kw:
+        if "__" in key:
+            val = kw[key]
+            del kw[key]
+            kw[key.replace("__", '.')] = val
+    return update(*args, _UPDATE_={'$push': kw})
+
 def insert(db, rec):
     return upsert(db, {}, **rec)
 
