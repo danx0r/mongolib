@@ -122,12 +122,20 @@ def _update(collection, *filter, **kw):
     if '_MULTI_' in kw:
         del kw['_MULTI_']
         multi = True
-    if kw == {}:
-        kw = dict(q)
-        if '_id' in q:
-            q = {'_id': kw['_id']}
-            del kw['_id']
-    up = {'$set': kw}
+    if "_UPDATE_" in kw:
+        up = kw['_UPDATE_']
+    else:
+        for key in kw:
+            if "__" in key:
+                val = kw[key]
+                del kw[key]
+                kw[key.replace("__", '.')] = val
+        if kw == {}:
+            kw = dict(q)
+            if '_id' in q:
+                q = {'_id': kw['_id']}
+                del kw['_id']
+        up = {'$set': kw}
 #     print "query:", q
 #     print "update:", up
     if q == {}:
@@ -174,6 +182,9 @@ def upmulti(*args, **kw):
 def upsert(*args, **kw):
     kw['_UPSERT_'] = True
     return update(*args, **kw)
+
+def insert(db, rec):
+    return upsert(db, {}, **rec)
 
 _op_table = {
     "<": "$lt",
