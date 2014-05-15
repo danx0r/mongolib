@@ -88,6 +88,6 @@ class obj(object):
 if __name__ == "__main__":
     db = obj('db')
     foo = db('foo')
-    q = foo == foo
+    q = foo == foo == foo
     print q
     
