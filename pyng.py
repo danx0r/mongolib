@@ -68,7 +68,15 @@ class query(object):
         self.obj = obj
 
     def __eq__(self, cmp):
+        print "eq called:", self, cmp
         self.q = {'eq':[self.q, cmp.q]}
+        print "--->", self
+        return self
+        
+    def __gt__(self, cmp):
+        print "gt called:", self, cmp
+        self.q = {'gt':[self.q, cmp.q]}
+        print "--->", self
         return self
         
     def __repr__(self):
@@ -88,6 +96,8 @@ class obj(object):
 if __name__ == "__main__":
     db = obj('db')
     foo = db('foo')
-    q = foo == foo == foo
-    print q
+    foo2 = db('foo2')
+    foo3 = db('foo3')
+    q = foo == (foo2 > foo3)
+    print "result:", q
     
