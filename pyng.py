@@ -54,8 +54,8 @@ x[0].lst[1]
 """
 
 import pymongo, sys, traceback, re, time, datetime
-from pprint import pprint
-# from pp_json import pp_json as pprint
+# from pprint import pprint
+from pp_json import pp_json as pprint
 # from copy import deepcopy
 #
 # query objects overload operators, build up a parsed query tree. You'll see.
@@ -140,8 +140,10 @@ example:
 -->
 {'$or': [{'foo': {'$gt': 1.1}}, {'bar': 2}]}
 """
-ALL_OPS = {'le':'$lte', 'ge':'$gte', 'eq':None, 'ne':'$ne', 'lt':'$lt', 'gt':'$gt', 'and':'$and', 'or':'$or'}
-LOGIC_OPS = {'or', 'and'}
+
+BINARY_OPS = {'le':'$lte', 'ge':'$gte', 'eq':None, 'ne':'$ne', 'lt':'$lt', 'gt':'$gt'}
+LOGIC_OPS = {'and':'$and', 'or':'$or'}
+UNARY_OPS = {'exists':'$exists'}
 
 def _strip_prefix(s):
     try:
@@ -153,7 +155,7 @@ def _strip_prefix(s):
 
 def _qtree2mongo(q):
     key = q.keys()[0]
-    if key in ALL_OPS:
+    if key in BINARY_OPS or key in LOGIC_OPS:
         ab = list(q[key])           #should be a 2-element list for binary ops
         for i in range(len(ab)):
 #             print "DEBUG", ab[i], type(ab[i]),type(ab[i]) == dict 
@@ -163,17 +165,20 @@ def _qtree2mongo(q):
             else:
                 ab[i] = _strip_prefix(ab[i])
 #                 print "                                               B", i, ab[i]
-        op = ALL_OPS[key]
-        if key in LOGIC_OPS:
-            m = {op: ab}        #TODO: consolidate for >2 elements in list
-        else:
-            a, b = ab               #guaranteed binary
+        if key in BINARY_OPS:
+            op = BINARY_OPS[key]
+            a, b = ab
             if op:
                 m = {a: {op: b}}
-            else:                   #special case for ==
-                m = {a: b}
-#     else:
-#         print "                                               C", q
+            else:
+                m = {a: b}                 #special case for ==
+        else:
+            op = LOGIC_OPS[key]
+            m = {op: ab}            #TODO: consolidate for >2 elements in list
+
+    elif key in UNARY_OPS:
+        op = UNARY_OPS[key]
+        m = {_strip_prefix(q[key]): {op: True}}     #yuck, I've been slimed
     return m
 
 # def qtree2mongo(q):
@@ -186,8 +191,11 @@ def _qtree2mongo(q):
 
 if __name__ == "__main__":
     db = obj('db')
-#     q = (db.foo == 1.1) & ((db.foo2 > db['test']) | (db.exists('foo3')))              #db['test'] avoids conflict with db.test()
-    q = (db.foo > 1.1) | (db.bar == 2)
+    q = (db.foo == 1.1) & ((db.foo2 > db['test']) | (db.exists('foo3')))              #db['test'] avoids conflict with db.test()
+#     q = (db.foo > 1.1) | (db.bar == 2)
     print "result:", q
-    print "mongo query:", _qtree2mongo(q.q)
+    pprint(q.q)
+    m =  _qtree2mongo(q.q)
+    print "mongo query:"
+    pprint(m)
     print q[0]
