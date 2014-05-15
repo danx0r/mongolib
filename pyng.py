@@ -60,10 +60,13 @@ from pprint import pprint
 # query objects overload operators, build up a parsed query tree. You'll see.
 #
 class query(object):
-    def __init__(self, key, obj):
+    def __init__(self, key, obj=None):
         self.key = key
-        self.q = key
         self.obj = obj
+        if self.obj:
+            self.q = self.obj.name + '.' + key
+        else:
+            self.q = key
 
     def __eq__(self, cmp):
         if type(cmp) != type(self):
@@ -90,7 +93,7 @@ class query(object):
         return self
         
     def __repr__(self):
-        return "<query:%s:%s>" % (self.obj.name, self.q)
+        return "<query:%s%s>" % (self.obj.name + '.' if self.obj else "", self.q)
 
 class obj(object):
     def __init__(self, name=None, host="127.0.0.1", port=27017, user=None, password=None):
@@ -108,6 +111,6 @@ if __name__ == "__main__":
 #     foo = db('foo')
 #     foo2 = db('foo2')
 #     foo3 = db('foo3')
-    q = (db('foo') == "foo2") | (db('foo2') > "foo3")
+    q = (db('foo') == query("foo2")) | (db('foo2') > db("foo3"))
     print "result:", q
     
