@@ -118,5 +118,5 @@ if __name__ == "__main__":
 #     foo = db('foo')
 #     foo2 = db('foo2')
 #     foo3 = db('foo3')
-    q = (db.foo == "bar") | (db.foo2 > db['test'])
+    q = (db.foo == "bar") | (db.foo2 > db['test'])              #db['test'] avoids conflict with db.test()
     print "result:", q
