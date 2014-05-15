@@ -65,7 +65,7 @@ class query(object):
         self.key = key
         self.obj = obj
         if self.obj:
-            self.q = self.obj.name + '.' + key
+            self.q = self.obj.name + ':' + key
         else:
             self.q = key
         if op:
@@ -129,10 +129,47 @@ class obj(object):
     def test(self):
         print "test method -- will __getattr__ override?"
 
+"""
+convert our logical, clean, rational parse tree to MDB's kludge-bucket of a cluster of hacks
+example:
+{'gt': ['db.foo', 1.0]}
+-->
+{'foo': {'$gt': 1.0}}
+"""
+OUR_OPS = {'le':'$lte', 'ge':'$gte', 'eq':None, 'ne':'$ne', 'lt':'$lt', 'gt':'$gt', 'and':'$and', 'or':'$or'}
+
+def _strip_prefix(s):
+    try:
+        if ':' in s:
+            s = s[s.find(':')+1:]
+    except:
+        pass
+    return s
+
+def _qtree2mongo(q):
+    key = q.keys()[0]
+    if key in OUR_OPS:
+        a, b = q[key]           #should be a 2-element list for binary ops
+        a = _strip_prefix(a)
+        b = _strip_prefix(b)
+        op = OUR_OPS[key]
+        if op:
+            m = {a: {op: b}}
+        else:                   #special case for ==
+            m = {a: b}
+    return m
+
+def qtree2mongo(q):
+    print "starting with:"
+    pprint(q)
+    m = _qtree2mongo(q)
+    print "becomes:"
+    pprint(m)
 
 if __name__ == "__main__":
     db = obj('db')
-    q = (db.foo == 1.1) & ((db.foo2 > db['test']) | (db.exists('foo3')))              #db['test'] avoids conflict with db.test()
+#     q = (db.foo == 1.1) & ((db.foo2 > db['test']) | (db.exists('foo3')))              #db['test'] avoids conflict with db.test()
+    q = (db.foo > 1.1)
     print "result:", q
-    pprint(q.q)
+    qtree2mongo(q.q)
     print q[0]
