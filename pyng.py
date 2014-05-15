@@ -70,7 +70,7 @@ class query(object):
 
     def __eq__(self, cmp):
         if type(cmp) != type(self):
-            cmp = query(cmp, self.obj)
+            cmp = query(cmp)
         print "eq called:", self, cmp
         self.q = {'eq':[self.q, cmp.q]}
         print "--->", self
@@ -78,7 +78,7 @@ class query(object):
         
     def __gt__(self, cmp):
         if type(cmp) != type(self):
-            cmp = query(cmp, self.obj)
+            cmp = query(cmp)
         print "gt called:", self, cmp
         self.q = {'gt':[self.q, cmp.q]}
         print "--->", self
@@ -86,7 +86,7 @@ class query(object):
         
     def __or__(self, cmp):
         if type(cmp) != type(self):
-            cmp = query(cmp, self.obj)
+            cmp = query(cmp)
         print "or called:", self, cmp
         self.q = {'or':[self.q, cmp.q]}
         print "--->", self
@@ -111,6 +111,6 @@ if __name__ == "__main__":
 #     foo = db('foo')
 #     foo2 = db('foo2')
 #     foo3 = db('foo3')
-    q = (db('foo') == query("foo2")) | (db('foo2') > db("foo3"))
+    q = (db('foo') == "bar") | (db('foo2') > db('foo3'))
     print "result:", q
     
