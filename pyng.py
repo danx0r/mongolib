@@ -169,7 +169,7 @@ def qtree2mongo(q):
 if __name__ == "__main__":
     db = obj('db')
 #     q = (db.foo == 1.1) & ((db.foo2 > db['test']) | (db.exists('foo3')))              #db['test'] avoids conflict with db.test()
-    q = (db.foo > 1.1)
+    q = (db.foo > 1.1) | (db.bar < 2)
     print "result:", q
     qtree2mongo(q.q)
     print q[0]
