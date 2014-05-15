@@ -92,6 +92,14 @@ class query(object):
         print "--->", self
         return self
     
+    def __and__(self, cmp):
+        if type(cmp) != type(self):
+            cmp = query(cmp)
+        print "and called:", self, cmp
+        self.q = {'and':[self.q, cmp.q]}
+        print "--->", self
+        return self
+    
     def __repr__(self):
         return "<query:%s%s>" % (self.obj.name + '.' if self.obj else "", self.q)
 
@@ -118,5 +126,5 @@ if __name__ == "__main__":
 #     foo = db('foo')
 #     foo2 = db('foo2')
 #     foo3 = db('foo3')
-    q = (db.foo == "bar") | (db.foo2 > db['test'])              #db['test'] avoids conflict with db.test()
+    q = (db.foo == "bar") & (db.foo2 > db['test'])              #db['test'] avoids conflict with db.test()
     print "result:", q
