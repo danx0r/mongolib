@@ -138,7 +138,7 @@ example:
 
 {'or': [{'gt': ['db:foo', 1.1]}, {'eq': ['db:bar', 2]}]}
 -->
-{'foo': {'$gt': 1.1}}
+{'$or': [{'foo': {'$gt': 1.1}}, {'bar': 2}]}
 """
 ALL_OPS = {'le':'$lte', 'ge':'$gte', 'eq':None, 'ne':'$ne', 'lt':'$lt', 'gt':'$gt', 'and':'$and', 'or':'$or'}
 LOGIC_OPS = {'or', 'and'}
@@ -158,11 +158,11 @@ def _qtree2mongo(q):
         for i in range(len(ab)):
 #             print "DEBUG", ab[i], type(ab[i]),type(ab[i]) == dict 
             if type(ab[i]) == dict:
-                ab[i] = qtree2mongo(ab[i])
-                print "                                               A", i, ab[i]
+                ab[i] = _qtree2mongo(ab[i])
+#                 print "                                               A", i, ab[i]
             else:
                 ab[i] = _strip_prefix(ab[i])
-                print "                                               B", i, ab[i]
+#                 print "                                               B", i, ab[i]
         op = ALL_OPS[key]
         if key in LOGIC_OPS:
             m = {op: ab}        #TODO: consolidate for >2 elements in list
@@ -172,22 +172,22 @@ def _qtree2mongo(q):
                 m = {a: {op: b}}
             else:                   #special case for ==
                 m = {a: b}
-    else:
-        print "                                               C", q
+#     else:
+#         print "                                               C", q
     return m
 
-def qtree2mongo(q):
-    print "starting with:"
-    pprint(q)
-    m = _qtree2mongo(q)
-    print "becomes:"
-    pprint(m)
-    return m
+# def qtree2mongo(q):
+#     print "starting with:"
+#     pprint(q)
+#     m = _qtree2mongo(q)
+#     print "becomes:"
+#     pprint(m)
+#     return m
 
 if __name__ == "__main__":
     db = obj('db')
 #     q = (db.foo == 1.1) & ((db.foo2 > db['test']) | (db.exists('foo3')))              #db['test'] avoids conflict with db.test()
     q = (db.foo > 1.1) | (db.bar == 2)
     print "result:", q
-    qtree2mongo(q.q)
+    print "mongo query:", _qtree2mongo(q.q)
     print q[0]
