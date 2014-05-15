@@ -54,8 +54,8 @@ x[0].lst[1]
 """
 
 import pymongo, sys, traceback, re, time, datetime
-# from pprint import pprint
-from pp_json import pp_json as pprint
+from pprint import pprint
+# from pp_json import pp_json as pprint
 # from copy import deepcopy
 #
 # query objects overload operators, build up a parsed query tree. You'll see.
@@ -135,8 +135,13 @@ example:
 {'gt': ['db.foo', 1.0]}
 -->
 {'foo': {'$gt': 1.0}}
+
+{'or': [{'gt': ['db:foo', 1.1]}, {'eq': ['db:bar', 2]}]}
+-->
+{'foo': {'$gt': 1.1}}
 """
-OUR_OPS = {'le':'$lte', 'ge':'$gte', 'eq':None, 'ne':'$ne', 'lt':'$lt', 'gt':'$gt', 'and':'$and', 'or':'$or'}
+ALL_OPS = {'le':'$lte', 'ge':'$gte', 'eq':None, 'ne':'$ne', 'lt':'$lt', 'gt':'$gt', 'and':'$and', 'or':'$or'}
+LOGIC_OPS = {'or', 'and'}
 
 def _strip_prefix(s):
     try:
@@ -148,15 +153,27 @@ def _strip_prefix(s):
 
 def _qtree2mongo(q):
     key = q.keys()[0]
-    if key in OUR_OPS:
-        a, b = q[key]           #should be a 2-element list for binary ops
-        a = _strip_prefix(a)
-        b = _strip_prefix(b)
-        op = OUR_OPS[key]
-        if op:
-            m = {a: {op: b}}
-        else:                   #special case for ==
-            m = {a: b}
+    if key in ALL_OPS:
+        ab = list(q[key])           #should be a 2-element list for binary ops
+        for i in range(len(ab)):
+#             print "DEBUG", ab[i], type(ab[i]),type(ab[i]) == dict 
+            if type(ab[i]) == dict:
+                ab[i] = qtree2mongo(ab[i])
+                print "                                               A", i, ab[i]
+            else:
+                ab[i] = _strip_prefix(ab[i])
+                print "                                               B", i, ab[i]
+        op = ALL_OPS[key]
+        if key in LOGIC_OPS:
+            m = {op: ab}        #TODO: consolidate for >2 elements in list
+        else:
+            a, b = ab               #guaranteed binary
+            if op:
+                m = {a: {op: b}}
+            else:                   #special case for ==
+                m = {a: b}
+    else:
+        print "                                               C", q
     return m
 
 def qtree2mongo(q):
@@ -165,11 +182,12 @@ def qtree2mongo(q):
     m = _qtree2mongo(q)
     print "becomes:"
     pprint(m)
+    return m
 
 if __name__ == "__main__":
     db = obj('db')
 #     q = (db.foo == 1.1) & ((db.foo2 > db['test']) | (db.exists('foo3')))              #db['test'] avoids conflict with db.test()
-    q = (db.foo > 1.1) | (db.bar < 2)
+    q = (db.foo > 1.1) | (db.bar == 2)
     print "result:", q
     qtree2mongo(q.q)
     print q[0]
