@@ -51,8 +51,6 @@ print x
 [{'foo': "bat", 'bar': {'sam': 1, 'al': 2, 'bob': 4}, 'bass': "heavy", 'lst': [456, 789]}]
 x[0].lst[1]
 789
-
-
 """
 
 import pymongo, sys, traceback, re, time, datetime
@@ -68,25 +66,31 @@ class query(object):
         self.obj = obj
 
     def __eq__(self, cmp):
+        if type(cmp) != type(self):
+            cmp = query(cmp, self.obj)
         print "eq called:", self, cmp
         self.q = {'eq':[self.q, cmp.q]}
         print "--->", self
         return self
         
     def __gt__(self, cmp):
+        if type(cmp) != type(self):
+            cmp = query(cmp, self.obj)
         print "gt called:", self, cmp
         self.q = {'gt':[self.q, cmp.q]}
         print "--->", self
         return self
         
     def __or__(self, cmp):
+        if type(cmp) != type(self):
+            cmp = query(cmp, self.obj)
         print "or called:", self, cmp
         self.q = {'or':[self.q, cmp.q]}
         print "--->", self
         return self
         
     def __repr__(self):
-        return "<query:%s>" % self.q
+        return "<query:%s:%s>" % (self.obj.name, self.q)
 
 class obj(object):
     def __init__(self, name=None, host="127.0.0.1", port=27017, user=None, password=None):
@@ -101,9 +105,9 @@ class obj(object):
 
 if __name__ == "__main__":
     db = obj('db')
-    foo = db('foo')
-    foo2 = db('foo2')
-    foo3 = db('foo3')
-    q = (foo == foo2) | (foo2 > foo3)
+#     foo = db('foo')
+#     foo2 = db('foo2')
+#     foo3 = db('foo3')
+    q = (db('foo') == "foo2") | (db('foo2') > "foo3")
     print "result:", q
     
