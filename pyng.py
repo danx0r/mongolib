@@ -91,7 +91,7 @@ class query(object):
         self.q = {'or':[self.q, cmp.q]}
         print "--->", self
         return self
-        
+    
     def __repr__(self):
         return "<query:%s%s>" % (self.obj.name + '.' if self.obj else "", self.q)
 
@@ -102,8 +102,15 @@ class obj(object):
     #
     # obj('foo') returns a query object wrapper around 'foo'
     #
-    def __call__(self, key):
+    def __getitem__(self, key):
         return query(key, self)
+
+    def __getattr__(self, key):
+#         print "getattr", args, kw
+        return query(key, self)
+
+    def test(self):
+        print "test method -- will __getattr__ override?"
 
 
 if __name__ == "__main__":
@@ -111,6 +118,5 @@ if __name__ == "__main__":
 #     foo = db('foo')
 #     foo2 = db('foo2')
 #     foo3 = db('foo3')
-    q = (db('foo') == "bar") | (db('foo2') > db('foo3'))
+    q = (db.foo == "bar") | (db.foo2 > db['test'])
     print "result:", q
-    
