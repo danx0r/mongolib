@@ -71,33 +71,33 @@ class query(object):
     def __eq__(self, cmp):
         if type(cmp) != type(self):
             cmp = query(cmp)
-        print "eq called:", self, cmp
+#         print "eq called:", self, cmp
         self.q = {'eq':[self.q, cmp.q]}
-        print "--->", self
+#         print "--->", self
         return self
         
     def __gt__(self, cmp):
         if type(cmp) != type(self):
             cmp = query(cmp)
-        print "gt called:", self, cmp
+#         print "gt called:", self, cmp
         self.q = {'gt':[self.q, cmp.q]}
-        print "--->", self
+#         print "--->", self
         return self
         
     def __or__(self, cmp):
         if type(cmp) != type(self):
             cmp = query(cmp)
-        print "or called:", self, cmp
+#         print "or called:", self, cmp
         self.q = {'or':[self.q, cmp.q]}
-        print "--->", self
+#         print "--->", self
         return self
     
     def __and__(self, cmp):
         if type(cmp) != type(self):
             cmp = query(cmp)
-        print "and called:", self, cmp
+#         print "and called:", self, cmp
         self.q = {'and':[self.q, cmp.q]}
-        print "--->", self
+#         print "--->", self
         return self
     
     def __getitem__(self, key):
@@ -126,9 +126,6 @@ class obj(object):
 
 if __name__ == "__main__":
     db = obj('db')
-#     foo = db('foo')
-#     foo2 = db('foo2')
-#     foo3 = db('foo3')
     q = (db.foo == "bar") & (db.foo2 > db['test'])              #db['test'] avoids conflict with db.test()
     print "result:", q
     print q[0]
