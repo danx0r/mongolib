@@ -54,19 +54,22 @@ x[0].lst[1]
 """
 
 import pymongo, sys, traceback, re, time, datetime
-from pprint import pprint
+# from pprint import pprint
+from pp_json import pp_json as pprint
 # from copy import deepcopy
 #
 # query objects overload operators, build up a parsed query tree. You'll see.
 #
 class query(object):
-    def __init__(self, key, obj=None):
+    def __init__(self, key, obj=None, op=None):
         self.key = key
         self.obj = obj
         if self.obj:
             self.q = self.obj.name + '.' + key
         else:
             self.q = key
+        if op:
+            self.q = {op: self.q}
 
     def __eq__(self, cmp):
         if type(cmp) != type(self):
@@ -104,7 +107,7 @@ class query(object):
         return "<item at index %s from %s>" % (key, self)
 
     def __repr__(self):
-        return "<query:%s%s>" % (self.obj.name + '.' if self.obj else "", self.q)
+        return "<query:%s%s>" % (self.obj.name + ':' if self.obj else "", self.q)
 
 class obj(object):
     def __init__(self, name=None, host="127.0.0.1", port=27017, user=None, password=None):
@@ -120,12 +123,16 @@ class obj(object):
 #         print "getattr", args, kw
         return query(key, self)
 
+    def exists(self, key):
+        return query(key, self, 'exists')
+
     def test(self):
         print "test method -- will __getattr__ override?"
 
 
 if __name__ == "__main__":
     db = obj('db')
-    q = (db.foo == "bar") & (db.foo2 > db['test'])              #db['test'] avoids conflict with db.test()
+    q = (db.foo == 1.1) & ((db.foo2 > db['test']) | (db.exists('foo3')))              #db['test'] avoids conflict with db.test()
     print "result:", q
+    pprint(q.q)
     print q[0]
