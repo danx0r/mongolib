@@ -100,6 +100,9 @@ class query(object):
         print "--->", self
         return self
     
+    def __getitem__(self, key):
+        return "<item at index %s from %s>" % (key, self)
+
     def __repr__(self):
         return "<query:%s%s>" % (self.obj.name + '.' if self.obj else "", self.q)
 
@@ -128,3 +131,4 @@ if __name__ == "__main__":
 #     foo3 = db('foo3')
     q = (db.foo == "bar") & (db.foo2 > db['test'])              #db['test'] avoids conflict with db.test()
     print "result:", q
+    print q[0]
