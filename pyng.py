@@ -79,6 +79,12 @@ class query(object):
         print "--->", self
         return self
         
+    def __or__(self, cmp):
+        print "or called:", self, cmp
+        self.q = {'or':[self.q, cmp.q]}
+        print "--->", self
+        return self
+        
     def __repr__(self):
         return "<query:%s>" % self.q
 
@@ -98,6 +104,6 @@ if __name__ == "__main__":
     foo = db('foo')
     foo2 = db('foo2')
     foo3 = db('foo3')
-    q = foo == (foo2 > foo3)
+    q = (foo == foo2) | (foo2 > foo3)
     print "result:", q
     
