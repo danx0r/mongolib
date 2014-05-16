@@ -224,6 +224,13 @@ def _qtree2mongo(q):
         exit()
     return m
 
+#
+# pony style:
+#
+#     def select(*args, **kw):
+#         print args, kw
+#     Db = (1,2,3)
+#     select(q for q in Db if q.foo == 1.1 and q.foo2 > q['test'] or q.exists('foo3'))
 
 if __name__ == "__main__":
     db = collection('test', 'test')
@@ -239,10 +246,3 @@ if __name__ == "__main__":
     rows = q.get()
     print rows.count(), "rows:"
     pprint(list(rows))
-#
-# pony style:
-#
-    def select(*args, **kw):
-        print args, kw
-    Db = (1,2,3)
-    select(q for q in Db if q.foo == 1.1 and q.foo2 > q['test'] or q.exists('foo3'))
