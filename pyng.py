@@ -130,9 +130,13 @@ class _query(object):
     def __getitem__(self, key):
         return "<item at index %s from %s>" % (key, self)
 
-    def get(self):
+    def get(self, *fields):
         m = _qtree2mongo(self.q)
-        return self.coll.mongo_collection.find(m)
+        if len(fields):
+            ret = self.coll.mongo_collection.find(m, fields)
+        else:
+            ret = self.coll.mongo_collection.find(m)
+        return ret
 
     def __repr__(self):
         return "<_query:%s%s>" % (self.coll.colname + ':' if self.coll else "", self.q)
@@ -165,10 +169,6 @@ class collection(object):
 
     def missing(self, key):
         return _query(key, self, 'missing')
-
-    def test(self):
-        print "test method -- will __getattr__ override?"
-
 """
 convert our logical, clean, rational parse tree to MDB's kludge-bucket of a cluster of hacks
 example:
@@ -243,6 +243,6 @@ if __name__ == "__main__":
     print "mongo query:", m
     pprint(m)
     print "mongo find:"
-    rows = q.get()
+    rows = q.get('bas')
     print rows.count(), "rows:"
     pprint(list(rows))
