@@ -179,6 +179,9 @@ def _qtree2mongo(q):
     elif key in UNARY_OPS:
         op = UNARY_OPS[key]
         m = {_strip_prefix(q[key]): {op: True}}     #yuck, I've been slimed
+    else:
+        print >> sys.stderr, "error parsing ops in _qtree2mongo"
+        exit()
     return m
 
 # def qtree2mongo(q):
