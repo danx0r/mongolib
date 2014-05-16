@@ -235,7 +235,7 @@ def _qtree2mongo(q):
 if __name__ == "__main__":
     db = collection('test', 'test')
 #     q = (db.foo == 1.1) & ( (db.foo2 > db['test']) | db.exists('foo3') )              #db['test'] avoids conflict with db.test()
-    q = (db.foo == 'bar') | (db.missing('zeba') & (db.foo2 != 'bar44') ) 
+    q = (db.foo == db.bar) | (db.missing('zeba') & (db.foo2 != 'bar44') ) 
     print "result:", q
     pprint(q.q)
     print q[0]
@@ -243,6 +243,6 @@ if __name__ == "__main__":
     print "mongo query:", m
     pprint(m)
     print "mongo find:"
-    rows = q.get('bas')
+    rows = q.get()
     print rows.count(), "rows:"
     pprint(list(rows))
