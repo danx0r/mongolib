@@ -236,7 +236,8 @@ if __name__ == "__main__":
     print "mongo query:", m
     pprint(m)
     print "mongo find:"
-    rows = q.get()
+    rows = (  (db.foo == 'bar') & (db.missing('zeba'))  ).get()
+    print rows.count(), "rows:"
     pprint(list(rows))
 #
 # pony style:
