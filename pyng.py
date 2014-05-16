@@ -202,3 +202,12 @@ if __name__ == "__main__":
     print "mongo query:"
     pprint(m)
     print q[0]
+#     exit()
+    
+#
+# pony style:
+#
+    def select(*args, **kw):
+        print args, kw
+    Db = (1,2,3)
+    select(q for q in Db if q.foo == 1.1 and q.foo2 > q['test'] or q.exists('foo3'))
