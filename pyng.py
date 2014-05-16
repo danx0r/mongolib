@@ -130,12 +130,12 @@ class _query(object):
     def __getitem__(self, key):
         return "<item at index %s from %s>" % (key, self)
 
-    def __repr__(self):
-        return "<_query:%s%s>" % (self.coll.colname + ':' if self.coll else "", self.q)
-
-    def GET(self):
+    def get(self):
         m = _qtree2mongo(self.q)
         return self.coll.mongo_collection.find(m)
+
+    def __repr__(self):
+        return "<_query:%s%s>" % (self.coll.colname + ':' if self.coll else "", self.q)
 
 class collection(object):
     def __init__(self, dbname=None, colname=None, host="127.0.0.1", port=27017, user=None, password=None):
@@ -236,7 +236,7 @@ if __name__ == "__main__":
     print "mongo query:", m
     pprint(m)
     print "mongo find:"
-    rows = q.GET()
+    rows = q.get()
     pprint(list(rows))
 #
 # pony style:
