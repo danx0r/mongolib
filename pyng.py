@@ -87,6 +87,30 @@ class _query(object):
 #         print "--->", self
         return self
         
+    def __lt__(self, cmp):
+        if type(cmp) != type(self):
+            cmp = _query(cmp)
+        self.q = {'lt':[self.q, cmp.q]}
+        return self
+        
+    def __ge__(self, cmp):
+        if type(cmp) != type(self):
+            cmp = _query(cmp)
+        self.q = {'ge':[self.q, cmp.q]}
+        return self
+        
+    def __le__(self, cmp):
+        if type(cmp) != type(self):
+            cmp = _query(cmp)
+        self.q = {'le':[self.q, cmp.q]}
+        return self
+        
+    def __ne__(self, cmp):
+        if type(cmp) != type(self):
+            cmp = _query(cmp)
+        self.q = {'ne':[self.q, cmp.q]}
+        return self
+        
     def __or__(self, cmp):
         if type(cmp) != type(self):
             cmp = _query(cmp)
@@ -108,6 +132,10 @@ class _query(object):
 
     def __repr__(self):
         return "<_query:%s%s>" % (self.coll.colname + ':' if self.coll else "", self.q)
+
+    def GET(self):
+        m = _qtree2mongo(self.q)
+        return self.coll.mongo_collection.find(m)
 
 class collection(object):
     def __init__(self, dbname=None, colname=None, host="127.0.0.1", port=27017, user=None, password=None):
@@ -135,6 +163,9 @@ class collection(object):
     def exists(self, key):
         return _query(key, self, 'exists')
 
+    def missing(self, key):
+        return _query(key, self, 'missing')
+
     def test(self):
         print "test method -- will __getattr__ override?"
 
@@ -152,7 +183,7 @@ example:
 
 BINARY_OPS = {'le':'$lte', 'ge':'$gte', 'eq':None, 'ne':'$ne', 'lt':'$lt', 'gt':'$gt'}
 LOGIC_OPS = {'and':'$and', 'or':'$or'}
-UNARY_OPS = {'exists':'$exists'}
+UNARY_OPS = {'exists':'$exists', 'missing':'$exists'}
 
 def _strip_prefix(s):
     try:
@@ -187,7 +218,7 @@ def _qtree2mongo(q):
 
     elif key in UNARY_OPS:
         op = UNARY_OPS[key]
-        m = {_strip_prefix(q[key]): {op: True}}     #yuck, I've been slimed
+        m = {_strip_prefix(q[key]): {op: True if key=='exists' else False}}     #yuck, I've been slimed
     else:
         print >> sys.stderr, "error parsing ops in _qtree2mongo"
         exit()
@@ -197,16 +228,16 @@ def _qtree2mongo(q):
 if __name__ == "__main__":
     db = collection('test', 'test')
 #     q = (db.foo == 1.1) & ( (db.foo2 > db['test']) | db.exists('foo3') )              #db['test'] avoids conflict with db.test()
-    q = (db.foo == 'bar') | (db.bas > -1.1)
+    q = (db.foo == 'bar') & (db.missing('zeba'))
     print "result:", q
     pprint(q.q)
     print q[0]
     m =  _qtree2mongo(q.q)
     print "mongo query:", m
     pprint(m)
-    print "collection:", db.mongo_collection
     print "mongo find:"
-    pprint(list(db.mongo_collection.find(m)))
+    rows = q.GET()
+    pprint(list(rows))
 #
 # pony style:
 #
