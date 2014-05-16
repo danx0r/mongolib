@@ -14,22 +14,22 @@
     CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
     DEALINGS IN THE SOFTWARE.
 
-pyng is a pythonic persistence layer and query syntax
+pyng is a pythonic persistence layer and _query syntax
 
 first version implemented using mongodb
 
 import pyng
 
-db = pyng.obj("db1")
+db = pyng.coll("db1")
 db.append(foo="bat", bar=1.0)
 db.append({'foo': "bat", 'bar': 2.0})
 db['key0'] = {'foo': "bum", 'bar': 3.14159}
-x = db('foo') == "bat" or db('bar') > 1.0                #call() operator creates a query object for key string, with overloaded operators
+x = db('foo') == "bat" or db('bar') > 1.0                #call() operator creates a _query object for key string, with overloaded operators
 #x = db.missing('barf')
 #x = db.exists('foo')
 #x = db.regex('foo', "^bat.$")
 #x = db.reNoCase('foo', "bat")
-x[0]                                        #first call to mongo for query?
+x[0]                                        #first call to mongo for _query?
 > {'foo': "bat", 'bar': 2.0}
 x[0] |= {'bass': "heavy"}
 x[0]
@@ -58,14 +58,14 @@ import pymongo, sys, traceback, re, time, datetime
 from pp_json import pp_json as pprint
 # from copy import deepcopy
 #
-# query objects overload operators, build up a parsed query tree. You'll see.
+# _query objects overload operators, build up a parsed _query tree. You'll see.
 #
-class query(object):
-    def __init__(self, key, obj=None, op=None):
+class _query(object):
+    def __init__(self, key, coll=None, op=None):
         self.key = key
-        self.obj = obj
-        if self.obj:
-            self.q = self.obj.name + ':' + key
+        self.coll = coll
+        if self.coll:
+            self.q = self.coll.colname + ':' + key
         else:
             self.q = key
         if op:
@@ -73,7 +73,7 @@ class query(object):
 
     def __eq__(self, cmp):
         if type(cmp) != type(self):
-            cmp = query(cmp)
+            cmp = _query(cmp)
 #         print "eq called:", self, cmp
         self.q = {'eq':[self.q, cmp.q]}
 #         print "--->", self
@@ -81,7 +81,7 @@ class query(object):
         
     def __gt__(self, cmp):
         if type(cmp) != type(self):
-            cmp = query(cmp)
+            cmp = _query(cmp)
 #         print "gt called:", self, cmp
         self.q = {'gt':[self.q, cmp.q]}
 #         print "--->", self
@@ -89,7 +89,7 @@ class query(object):
         
     def __or__(self, cmp):
         if type(cmp) != type(self):
-            cmp = query(cmp)
+            cmp = _query(cmp)
 #         print "or called:", self, cmp
         self.q = {'or':[self.q, cmp.q]}
 #         print "--->", self
@@ -97,7 +97,7 @@ class query(object):
     
     def __and__(self, cmp):
         if type(cmp) != type(self):
-            cmp = query(cmp)
+            cmp = _query(cmp)
 #         print "and called:", self, cmp
         self.q = {'and':[self.q, cmp.q]}
 #         print "--->", self
@@ -107,24 +107,33 @@ class query(object):
         return "<item at index %s from %s>" % (key, self)
 
     def __repr__(self):
-        return "<query:%s%s>" % (self.obj.name + ':' if self.obj else "", self.q)
+        return "<_query:%s%s>" % (self.coll.colname + ':' if self.coll else "", self.q)
 
-class obj(object):
-    def __init__(self, name=None, host="127.0.0.1", port=27017, user=None, password=None):
-        if name:
-            self.name = name
+class collection(object):
+    def __init__(self, dbname=None, colname=None, host="127.0.0.1", port=27017, user=None, password=None):
+        if dbname:
+            self.dbname = dbname
+            self.colname = colname
+            try:
+                self.client = pymongo.MongoClient(host, port)
+                if user:
+                    self.client[dbname].authenticate(user, pw)
+                self.mongo_collection = self.client[dbname][colname]
+                print "connection successful to collection:", self.colname, self.mongo_collection
+            except:
+                print >> sys.stderr, traceback.format_exc()
     #
-    # obj('foo') returns a query object wrapper around 'foo'
+    # coll('foo') returns a _query object wrapper around 'foo'
     #
     def __getitem__(self, key):
-        return query(key, self)
+        return _query(key, self)
 
     def __getattr__(self, key):
 #         print "getattr", args, kw
-        return query(key, self)
+        return _query(key, self)
 
     def exists(self, key):
-        return query(key, self, 'exists')
+        return _query(key, self, 'exists')
 
     def test(self):
         print "test method -- will __getattr__ override?"
@@ -184,26 +193,20 @@ def _qtree2mongo(q):
         exit()
     return m
 
-# def qtree2mongo(q):
-#     print "starting with:"
-#     pprint(q)
-#     m = _qtree2mongo(q)
-#     print "becomes:"
-#     pprint(m)
-#     return m
 
 if __name__ == "__main__":
-    db = obj('db')
-    q = (db.foo == 1.1) & ( (db.foo2 > db['test']) | db.exists('foo3') )              #db['test'] avoids conflict with db.test()
-#     q = (db.foo > 1.1) | (db.bar == 2)
+    db = collection('test', 'test')
+#     q = (db.foo == 1.1) & ( (db.foo2 > db['test']) | db.exists('foo3') )              #db['test'] avoids conflict with db.test()
+    q = (db.foo == 'bar') | (db.bas > -1.1)
     print "result:", q
     pprint(q.q)
-    m =  _qtree2mongo(q.q)
-    print "mongo query:"
-    pprint(m)
     print q[0]
-#     exit()
-    
+    m =  _qtree2mongo(q.q)
+    print "mongo query:", m
+    pprint(m)
+    print "collection:", db.mongo_collection
+    print "mongo find:"
+    pprint(list(db.mongo_collection.find(m)))
 #
 # pony style:
 #
