@@ -85,7 +85,7 @@ def parse(exp):
 
 if __name__ == "__main__":
     foo = 444
-    bus = 333   
-    mq = parse("foo == 'bar' or bus.fzz.bat > foo")
+    bus = "BUSS"
+    mq = parse("foo == 'bar' or foo < bus.fzz.bat")
 #     print type(mq)
     print mq
