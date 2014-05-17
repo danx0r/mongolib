@@ -60,8 +60,8 @@ def _parseAst(ast, position=0):
     elif ast.__class__ == Getattr:
         print "DEBUG", ast.getChildren()
         a, b = ast.getChildren()
-        a = _parseAst(a, 0)
-        b = _parseAst(b, 0)
+        a = _parseAst(a, position)
+        b = _parseAst(b, position)
         q = a + "." + b
     elif ast.__class__ in LOGICAL_OPS:
 #         print "DEBUG logical and/or"
@@ -84,7 +84,8 @@ def parse(exp):
     return q
 
 if __name__ == "__main__":
-    foo = 444   
-    mq = parse("foo == 'bar' or bus.fzz.bat > 4")
+    foo = 444
+    bus = 333   
+    mq = parse("foo == 'bar' or bus.fzz.bat > foo")
 #     print type(mq)
     print mq
