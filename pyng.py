@@ -37,10 +37,10 @@ def _parseAst(ast, position=0):
     if ast.__class__ == Const:
         if position == 0:
             raise Exception("ERROR -- no const on left side")
-        print "DEBUG Const", ast.getChildren()
+#         print "DEBUG Const", ast.getChildren()
         q = ast.getChildren()[0]
     elif ast.__class__ == Name:
-        print "DEBUG Name", ast.getChildren()
+#         print "DEBUG Name", ast.getChildren()
         q = ast.getChildren()[0]
         if position > 0:                                #convert to Python object in present namespace (avoid eval like the plague it is!)
             try:
@@ -52,14 +52,19 @@ def _parseAst(ast, position=0):
         op = COMPARE_OPS[op]
         a = _parseAst(a, 0)
         b = _parseAst(b, 1)
-        print "DEBUG cmp", a, op, b
+#         print "DEBUG cmp", a, op, b
         if op:
             q = {a: {op: b}}
         else:
             q = {a: b}                                  #special eq case
-        
+    elif ast.__class__ == Getattr:
+        print "DEBUG", ast.getChildren()
+        a, b = ast.getChildren()
+        a = _parseAst(a, 0)
+        b = _parseAst(b, 0)
+        q = a + "." + b
     elif ast.__class__ in LOGICAL_OPS:
-        print "DEBUG logical and/or"
+#         print "DEBUG logical and/or"
         args = []
         for x in ast.getChildren():                        #should always be 2 children
             args.append(_parseAst(x))
@@ -80,6 +85,6 @@ def parse(exp):
 
 if __name__ == "__main__":
     foo = 444   
-    mq = parse("foo == 'bar' or bus > 4")
-    print type(mq)
+    mq = parse("foo == 'bar' or bus.fzz.bat > 4")
+#     print type(mq)
     print mq
