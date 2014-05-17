@@ -32,19 +32,26 @@ from compiler.ast import *
 LOGICAL_OPS = {And: 'and', Or: 'or'}
 
 def _parseAst(ast):
-    if ast.__class__ in (Or, And):
+    q = ast
+    if ast.__class__ in LOGICAL_OPS:
         print "DEBUG logical and/or"
+#         q =  
 #     print ast.getChildren()
     return ast
     
 def parse(exp):
     p = compiler.parse(exp)
-    p = p.getChildren()[1].getChildren()[0]
+#     print p
+    if p.getChildren()[0] == None:
+        p = p.getChildren()[1].getChildren()[0]
+    else:
+#         print "DEBUG", p.getChildren()
+        p = Const(p.getChildren()[0])                   #for some reason Python parses a single string as a module ref not const
     if p.__class__==Discard:
         p = p.getChildren()[0]
     q = _parseAst(p)
     return q
 
 if __name__ == "__main__":   
-    mq = parse("bus or 4")
+    mq = parse("'bus'")
     print mq
