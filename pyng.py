@@ -80,6 +80,6 @@ def parse(exp):
 
 if __name__ == "__main__":
     foo = 444   
-    mq = parse("foo > 'boo' or foo == 4")
+    mq = parse("foo == 'bar' or bus > 4")
     print type(mq)
     print mq
