@@ -92,6 +92,6 @@ if __name__ == "__main__":
     foo = 444
     bus = "BUSS"
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
-    mq = parse("foo ==~ 'bar' or bus.fzz.bat <= bus")
+    mq = parse("foo ==~ 'bar' or bus.fzz.bat != bus")
 #     print type(mq)
     print mq
