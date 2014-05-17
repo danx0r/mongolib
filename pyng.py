@@ -53,7 +53,10 @@ def _parseAst(ast, position=0):
         a = _parseAst(a, 0)
         b = _parseAst(b, 1)
         print "DEBUG cmp", a, op, b
-        q = {a: {op: b}}
+        if op:
+            q = {a: {op: b}}
+        else:
+            q = {a: b}                                  #special eq case
         
     elif ast.__class__ in LOGICAL_OPS:
         print "DEBUG logical and/or"
@@ -77,6 +80,6 @@ def parse(exp):
 
 if __name__ == "__main__":
     foo = 444   
-    mq = parse("foo > 'boo'")
+    mq = parse("foo > 'boo' or foo == 4")
     print type(mq)
     print mq
