@@ -26,7 +26,7 @@ use directly in mongolib:
 update("foo == 'bar' or bus > 4", fields=('foo', 'bar', 'bus'))
 """
 
-import compiler, sys
+import compiler, sys, re
 from compiler.ast import *
 
 LOGICAL_OPS = {And: '$and', Or: '$or'}
@@ -58,11 +58,16 @@ def _parseAst(ast, position=0):
         else:
             q = {a: b}                                  #special eq case
     elif ast.__class__ == Getattr:
-        print "DEBUG", ast.getChildren()
+#         print "DEBUG dot", ast.getChildren()
         a, b = ast.getChildren()
         a = _parseAst(a, position)
         b = _parseAst(b, position)
         q = a + "." + b
+    elif ast.__class__ == Invert:                       #~ means regex!
+        a = ast.getChildren()[0]
+        a = _parseAst(a, 1)
+#         print "DEBUG regex", a
+        q = re.compile(a, re.IGNORECASE)
     elif ast.__class__ in LOGICAL_OPS:
 #         print "DEBUG logical and/or"
         args = []
@@ -86,6 +91,7 @@ def parse(exp):
 if __name__ == "__main__":
     foo = 444
     bus = "BUSS"
-    mq = parse("foo == 'bar' or foo < bus.fzz.bat")
+#     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
+    mq = parse("foo ==~ 'bar' or bus.fzz.bat <= bus")
 #     print type(mq)
     print mq
