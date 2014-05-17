@@ -30,7 +30,8 @@ import compiler, sys
 from compiler.ast import *
 
 LOGICAL_OPS = {And: '$and', Or: '$or'}
-
+BINARY_OPS = {And: '$and', Or: '$or'}
+COMPARE_OPS = {'==': None, '<': '$lt', '>': '$gt', '<=': '$lte', '>=': '$gte', '!=': '$ne'}
 def _parseAst(ast, position=0):
     q = ast
     if ast.__class__ == Const:
@@ -38,7 +39,7 @@ def _parseAst(ast, position=0):
             raise Exception("ERROR -- no const on left side")
         print "DEBUG Const", ast.getChildren()
         q = ast.getChildren()[0]
-    if ast.__class__ == Name:
+    elif ast.__class__ == Name:
         print "DEBUG Name", ast.getChildren()
         q = ast.getChildren()[0]
         if position > 0:                                #convert to Python object in present namespace (avoid eval like the plague it is!)
@@ -46,6 +47,14 @@ def _parseAst(ast, position=0):
                 q = locals()[q]
             except:
                 q = globals()[q]
+    elif ast.__class__ == Compare:
+        a, op, b = ast.getChildren()
+        op = COMPARE_OPS[op]
+        a = _parseAst(a, 0)
+        b = _parseAst(b, 1)
+        print "DEBUG cmp", a, op, b
+        q = {a: {op: b}}
+        
     elif ast.__class__ in LOGICAL_OPS:
         print "DEBUG logical and/or"
         args = []
@@ -68,6 +77,6 @@ def parse(exp):
 
 if __name__ == "__main__":
     foo = 444   
-    mq = parse("'foo' or boo")
+    mq = parse("foo > 'boo'")
     print type(mq)
     print mq
