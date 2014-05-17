@@ -26,18 +26,33 @@ use directly in mongolib:
 update("foo == 'bar' or bus > 4", fields=('foo', 'bar', 'bus'))
 """
 
-import compiler
+import compiler, sys
 from compiler.ast import *
 
-LOGICAL_OPS = {And: 'and', Or: 'or'}
+LOGICAL_OPS = {And: '$and', Or: '$or'}
 
-def _parseAst(ast):
+def _parseAst(ast, position=0):
     q = ast
-    if ast.__class__ in LOGICAL_OPS:
+    if ast.__class__ == Const:
+        if position == 0:
+            raise Exception("ERROR -- no const on left side")
+        print "DEBUG Const", ast.getChildren()
+        q = ast.getChildren()[0]
+    if ast.__class__ == Name:
+        print "DEBUG Name", ast.getChildren()
+        q = ast.getChildren()[0]
+        if position > 0:                                #convert to Python object in present namespace (avoid eval like the plague it is!)
+            try:
+                q = locals()[q]
+            except:
+                q = globals()[q]
+    elif ast.__class__ in LOGICAL_OPS:
         print "DEBUG logical and/or"
-#         q =  
-#     print ast.getChildren()
-    return ast
+        args = []
+        for x in ast.getChildren():                        #should always be 2 children
+            args.append(_parseAst(x))
+        q = {LOGICAL_OPS[ast.__class__]: args}
+    return q
     
 def parse(exp):
     p = compiler.parse(exp)
@@ -45,13 +60,14 @@ def parse(exp):
     if p.getChildren()[0] == None:
         p = p.getChildren()[1].getChildren()[0]
     else:
-#         print "DEBUG", p.getChildren()
         p = Const(p.getChildren()[0])                   #for some reason Python parses a single string as a module ref not const
     if p.__class__==Discard:
         p = p.getChildren()[0]
     q = _parseAst(p)
     return q
 
-if __name__ == "__main__":   
-    mq = parse("'bus'")
+if __name__ == "__main__":
+    foo = 444   
+    mq = parse("'foo' or boo")
+    print type(mq)
     print mq
