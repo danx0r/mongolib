@@ -125,7 +125,9 @@ def _parseSelect(ast):
         q = {a: False}
     elif ast.__class__ == Slice:
         a, b, b, c = ast.getChildren()
-        a = a.getChildren()[0]                          #should be a Name
+        a = _parseSelect(a)
+        if type(a) == dict:
+            a = a.keys()[0]
         if b.__class__ == UnarySub:
             b = -b.getChildren()[0].getChildren()[0]
         else:
@@ -145,7 +147,7 @@ def _parseSelect(ast):
             q.update(a)
     else:
         raise Exception("ERROR in parseSelect: unknown ast op: %s" % ast.__class__)
-    print "  --> parseSelect returns:", q
+#     print "  --> parseSelect returns:", q
     return q
     
 def parseSelect(exp):
@@ -166,5 +168,5 @@ if __name__ == "__main__":
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
     mq = parseQuery("+foo.bar")
     print mq
-    ms = parseSelect("bat[-1:0], -bar.fzz")
+    ms = parseSelect("bat.fff[-1:0], -bar.fzz")
     print ms
