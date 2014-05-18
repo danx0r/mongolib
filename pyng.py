@@ -32,7 +32,7 @@ from compiler.ast import *
 LOGICAL_OPS = {And: '$and', Or: '$or'}
 BINARY_OPS = {And: '$and', Or: '$or'}
 COMPARE_OPS = {'==': None, '<': '$lt', '>': '$gt', '<=': '$lte', '>=': '$gte', '!=': '$ne'}
-def _parseAst(ast, position=0):
+def _parseQuery(ast, position=0):
     q = ast
     if ast.__class__ == Const:
         if position == 0:
@@ -50,8 +50,8 @@ def _parseAst(ast, position=0):
     elif ast.__class__ == Compare:
         a, op, b = ast.getChildren()
         op = COMPARE_OPS[op]
-        a = _parseAst(a, 0)
-        b = _parseAst(b, 1)
+        a = _parseQuery(a, 0)
+        b = _parseQuery(b, 1)
 #         print "DEBUG cmp", a, op, b
         if op:
             q = {a: {op: b}}
@@ -60,23 +60,23 @@ def _parseAst(ast, position=0):
     elif ast.__class__ == Getattr:
 #         print "DEBUG dot", ast.getChildren()
         a, b = ast.getChildren()
-        a = _parseAst(a, position)
-        b = _parseAst(b, position)
+        a = _parseQuery(a, position)
+        b = _parseQuery(b, position)
         q = a + "." + b
     elif ast.__class__ == Invert:                       #~ means regex!
         a = ast.getChildren()[0]
-        a = _parseAst(a, 1)
+        a = _parseQuery(a, 1)
 #         print "DEBUG regex", a
         q = re.compile(a, re.IGNORECASE)
     elif ast.__class__ in LOGICAL_OPS:
 #         print "DEBUG logical and/or"
         args = []
         for x in ast.getChildren():                        #should always be 2 children
-            args.append(_parseAst(x))
+            args.append(_parseQuery(x))
         q = {LOGICAL_OPS[ast.__class__]: args}
     return q
     
-def parse(exp):
+def parseQuery(exp):
     p = compiler.parse(exp)
 #     print p
     if p.getChildren()[0] == None:
@@ -85,13 +85,13 @@ def parse(exp):
         p = Const(p.getChildren()[0])                   #for some reason Python parses a single string as a module ref not const
     if p.__class__==Discard:
         p = p.getChildren()[0]
-    q = _parseAst(p)
+    q = _parseQuery(p)
     return q
 
 if __name__ == "__main__":
     foo = 444
     bus = "BUSS"
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
-    mq = parse("foo ==~ 'bar' or bus.fzz.bat != bus")
+    mq = parseQuery("foo ==~ 'bar' or bus.fzz.bat != bus")
 #     print type(mq)
     print mq
