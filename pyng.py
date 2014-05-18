@@ -61,7 +61,7 @@ def _parseQuery(ast, position=0):
         else:
             q = {a: b}                                  #special eq case
     elif ast.__class__ == Getattr:
-#         print "DEBUG dot", ast.getChildren()
+        print "DEBUG dot", ast.getChildren()
         a, b = ast.getChildren()
         a = _parseQuery(a, position)
         b = _parseQuery(b, position)
@@ -84,6 +84,12 @@ def _parseQuery(ast, position=0):
 #         print "DEBUG +", a
         a = _parseQuery(a, 0)
         q = {a: {'$exists': False}}
+    elif ast.__class__ == Subscript:
+#         print "DEBUG subscript", ast.getChildren()
+        a, b, b = ast.getChildren()
+        a = _parseQuery(a, position)
+        b = _parseQuery(b, position)
+        q = a[b]
     elif ast.__class__ in LOGICAL_OPS:
 #         print "DEBUG logical and/or"
         args = []
@@ -177,11 +183,14 @@ if __name__ == "__main__":
     class fuzz(object):
         pass
     bat = fuzz()
-    bat.bar = 123
+    bat.bar = 456
+    dik = {}
+    dik['dat'] = 789
+    
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
     mq = parseQuery("foo == bus")
     print mq
-    mq = parseQuery("foo == bat.bar")
+    mq = parseQuery("bar > 4 and foo == dik['dat']")
     print mq
-#     ms = parseSelect("bat.fff[-1:], -bar.fzz")
-#     print ms
+    ms = parseSelect("bat.fff[-1:], -bar.fzz")
+    print ms
