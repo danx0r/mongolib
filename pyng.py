@@ -106,30 +106,45 @@ def parseQuery(exp):
     return q
 
 def _parseSelect(ast):
-    print "DEBUG parseSelect ast:", ast
+#     print "DEBUG parseSelect ast:", ast
     q = ast
     if ast.__class__ == Name:
 #         print "DEBUG Name", ast.getChildren()
         q = {ast.getChildren()[0]: True}
     elif ast.__class__ == Getattr:
-        print "DEBUG dot", ast.getChildren()
+#         print "DEBUG dot", ast.getChildren()
         a, b = ast.getChildren()
         a = a.getChildren()[0]                          #should be a Name
         q = {a + "." + b: True}
     elif ast.__class__ == UnarySub:                       #- minus -- missing
         a = ast.getChildren()[0]
         a = _parseSelect(a)
-        print "DEBUG -", a
+#         print "DEBUG -", a
         if type(a) == dict:
             a = a.keys()[0]
         q = {a: False}
+    elif ast.__class__ == Slice:
+        a, b, b, c = ast.getChildren()
+        a = a.getChildren()[0]                          #should be a Name
+        if b.__class__ == UnarySub:
+            b = -b.getChildren()[0].getChildren()[0]
+        else:
+            b = b.getChildren()[0]                          #should be a Const
+        if c.__class__ == UnarySub:
+            c = -c.getChildren()[0].getChildren()[0]
+        else:
+            c = c.getChildren()[0]                          #should be a Const
+#         print "DEBUG []", a, b, c
+        q = {a: {'$slice': [b, c-b]}}
+    elif ast.__class__ == Subscript:
+        raise Exception("ERROR in parseSelect: subscripts not supported. Use slice notation instead. foo[-1:0] returns last element")
     elif ast.__class__ == Tuple:
         q = {}
         for e in ast.getChildren():
             a = _parseSelect(e)
             q.update(a)
     else:
-        raise Exception("ERROR -- unknown ast op: %s" % ast.__class__)
+        raise Exception("ERROR in parseSelect: unknown ast op: %s" % ast.__class__)
     print "  --> parseSelect returns:", q
     return q
     
@@ -151,5 +166,5 @@ if __name__ == "__main__":
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
     mq = parseQuery("+foo.bar")
     print mq
-    ms = parseSelect("bat, -bar.fzz")
+    ms = parseSelect("bat[-1:0], -bar.fzz")
     print ms
