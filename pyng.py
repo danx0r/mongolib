@@ -65,7 +65,10 @@ def _parseQuery(ast, position=0):
         a, b = ast.getChildren()
         a = _parseQuery(a, position)
         b = _parseQuery(b, position)
-        q = a + "." + b
+        try:
+            q = a + "." + b
+        except:
+            q = getattr(a, b)
     elif ast.__class__ == Invert:                       #~ means regex!
         a = ast.getChildren()[0]
         a = _parseQuery(a, 1)
@@ -171,8 +174,14 @@ def parseSelect(exp):
 if __name__ == "__main__":
     foo = 444
     bus = "BUSS"
+    class fuzz(object):
+        pass
+    bat = fuzz()
+    bat.bar = 123
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
-    mq = parseQuery("+foo.bar")
+    mq = parseQuery("foo == bus")
     print mq
-    ms = parseSelect("bat.fff[-1:], -bar.fzz")
-    print ms
+    mq = parseQuery("foo == bat.bar")
+    print mq
+#     ms = parseSelect("bat.fff[-1:], -bar.fzz")
+#     print ms
