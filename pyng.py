@@ -33,6 +33,7 @@ LOGICAL_OPS = {And: '$and', Or: '$or'}
 BINARY_OPS = {And: '$and', Or: '$or'}
 COMPARE_OPS = {'==': None, '<': '$lt', '>': '$gt', '<=': '$lte', '>=': '$gte', '!=': '$ne'}
 def _parseQuery(ast, position=0):
+#     print "DEBUG parseQuery ast:", ast, "pos:", position
     q = ast
     if ast.__class__ == Const:
         if position == 0:
@@ -40,7 +41,7 @@ def _parseQuery(ast, position=0):
 #         print "DEBUG Const", ast.getChildren()
         q = ast.getChildren()[0]
     elif ast.__class__ == Name:
-#         print "DEBUG Name", ast.getChildren()
+#         print "DEBUG Name", position, ast.getChildren()
         q = ast.getChildren()[0]
         if position > 0:                                #convert to Python object in present namespace (avoid eval like the plague it is!)
             try:
@@ -71,12 +72,12 @@ def _parseQuery(ast, position=0):
     elif ast.__class__ == UnaryAdd:                       #+ means $exists
         a = ast.getChildren()[0]
 #         print "DEBUG +", a
-        a = _parseQuery(a, 1)
+        a = _parseQuery(a, 0)
         q = {a: {'$exists': True}}
     elif ast.__class__ == UnarySub:                       #- minus -- missing
         a = ast.getChildren()[0]
 #         print "DEBUG +", a
-        a = _parseQuery(a, 1)
+        a = _parseQuery(a, 0)
         q = {a: {'$exists': False}}
     elif ast.__class__ in LOGICAL_OPS:
 #         print "DEBUG logical and/or"
@@ -85,7 +86,7 @@ def _parseQuery(ast, position=0):
             args.append(_parseQuery(x))
         q = {LOGICAL_OPS[ast.__class__]: args}
     else:
-        raise Exception("ERROR -- unknown ast op: %s" % ast.__class__)
+        raise Exception("ERROR in parseQuery -- unknown ast op: %s" % ast.__class__)
     return q
     
 def parseQuery(exp):
@@ -98,6 +99,8 @@ def parseQuery(exp):
     if p.__class__==Discard:
         p = p.getChildren()[0]
     q = _parseQuery(p)
+    if type(q) != dict:
+        raise Exception("Error in parseQuery: didn't parse properly. +foo to test for exists")
     return q
 
 def _parseSelect(ast):
@@ -118,8 +121,8 @@ def _parseSelect(ast):
     elif ast.__class__ == Compare:
         a, op, b = ast.getChildren()
         op = COMPARE_OPS[op]
-        a = _parseQuery(a, 0)
-        b = _parseQuery(b, 1)
+        a = _parseSelect(a, 0)
+        b = _parseSelect(b, 1)
 #         print "DEBUG cmp", a, op, b
         if op:
             q = {a: {op: b}}
@@ -128,19 +131,29 @@ def _parseSelect(ast):
     elif ast.__class__ == Getattr:
 #         print "DEBUG dot", ast.getChildren()
         a, b = ast.getChildren()
-        a = _parseQuery(a, position)
-        b = _parseQuery(b, position)
+        a = _parseSelect(a, position)
+        b = _parseSelect(b, position)
         q = a + "." + b
     elif ast.__class__ == Invert:                       #~ means regex!
         a = ast.getChildren()[0]
-        a = _parseQuery(a, 1)
+        a = _parseSelect(a, 1)
 #         print "DEBUG regex", a
         q = re.compile(a, re.IGNORECASE)
+    elif ast.__class__ == UnaryAdd:                       #+ means $exists
+        a = ast.getChildren()[0]
+#         print "DEBUG +", a
+        a = _parseSelect(a, 1)
+        q = {a: {'$exists': True}}
+    elif ast.__class__ == UnarySub:                       #- minus -- missing
+        a = ast.getChildren()[0]
+#         print "DEBUG +", a
+        a = _parseSelect(a, 1)
+        q = {a: {'$exists': False}}
     elif ast.__class__ in LOGICAL_OPS:
 #         print "DEBUG logical and/or"
         args = []
         for x in ast.getChildren():                        #should always be 2 children
-            args.append(_parseQuery(x))
+            args.append(_parseSelect(x))
         q = {LOGICAL_OPS[ast.__class__]: args}
     else:
         raise Exception("ERROR -- unknown ast op: %s" % ast.__class__)
@@ -155,14 +168,14 @@ def parseSelect(exp):
         p = Const(p.getChildren()[0])                   #for some reason Python parses a single string as a module ref not const
     if p.__class__==Discard:
         p = p.getChildren()[0]
-    q = _parseQuery(p)
+    q = _parseSelect(p)
     return q
 
 if __name__ == "__main__":
     foo = 444
     bus = "BUSS"
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
-    mq = parseQuery("-foo or bar=='bat'")
+    mq = parseQuery("+foo")#"-foo or bar=='bat'")
     print mq
-    ms = parseSelect("a")
-    print ms
+#     ms = parseSelect("a")
+#     print ms
