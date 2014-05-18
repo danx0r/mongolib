@@ -114,8 +114,8 @@ def _parseSelect(ast):
     elif ast.__class__ == Getattr:
         print "DEBUG dot", ast.getChildren()
         a, b = ast.getChildren()
-        
-        q = a + "." + b
+        a = a.getChildren()[0]                          #should be a Name
+        q = {a + "." + b: True}
     elif ast.__class__ == UnarySub:                       #- minus -- missing
         a = ast.getChildren()[0]
         a = _parseSelect(a)
@@ -151,5 +151,5 @@ if __name__ == "__main__":
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
     mq = parseQuery("+foo.bar")
     print mq
-#     ms = parseSelect("bar.fzz")
-#     print ms
+    ms = parseSelect("bat, -bar.fzz")
+    print ms
