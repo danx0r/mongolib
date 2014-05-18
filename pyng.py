@@ -68,15 +68,85 @@ def _parseQuery(ast, position=0):
         a = _parseQuery(a, 1)
 #         print "DEBUG regex", a
         q = re.compile(a, re.IGNORECASE)
+    elif ast.__class__ == UnaryAdd:                       #+ means $exists
+        a = ast.getChildren()[0]
+#         print "DEBUG +", a
+        a = _parseQuery(a, 1)
+        q = {a: {'$exists': True}}
+    elif ast.__class__ == UnarySub:                       #- minus -- missing
+        a = ast.getChildren()[0]
+#         print "DEBUG +", a
+        a = _parseQuery(a, 1)
+        q = {a: {'$exists': False}}
     elif ast.__class__ in LOGICAL_OPS:
 #         print "DEBUG logical and/or"
         args = []
         for x in ast.getChildren():                        #should always be 2 children
             args.append(_parseQuery(x))
         q = {LOGICAL_OPS[ast.__class__]: args}
+    else:
+        raise Exception("ERROR -- unknown ast op: %s" % ast.__class__)
     return q
     
 def parseQuery(exp):
+    p = compiler.parse(exp)
+#     print p
+    if p.getChildren()[0] == None:
+        p = p.getChildren()[1].getChildren()[0]
+    else:
+        p = Const(p.getChildren()[0])                   #for some reason Python parses a single string as a module ref not const
+    if p.__class__==Discard:
+        p = p.getChildren()[0]
+    q = _parseQuery(p)
+    return q
+
+def _parseSelect(ast):
+    q = ast
+    if ast.__class__ == Const:
+        if position == 0:
+            raise Exception("ERROR -- no const on left side")
+#         print "DEBUG Const", ast.getChildren()
+        q = ast.getChildren()[0]
+    elif ast.__class__ == Name:
+#         print "DEBUG Name", ast.getChildren()
+        q = ast.getChildren()[0]
+        if position > 0:                                #convert to Python object in present namespace (avoid eval like the plague it is!)
+            try:
+                q = locals()[q]
+            except:
+                q = globals()[q]
+    elif ast.__class__ == Compare:
+        a, op, b = ast.getChildren()
+        op = COMPARE_OPS[op]
+        a = _parseQuery(a, 0)
+        b = _parseQuery(b, 1)
+#         print "DEBUG cmp", a, op, b
+        if op:
+            q = {a: {op: b}}
+        else:
+            q = {a: b}                                  #special eq case
+    elif ast.__class__ == Getattr:
+#         print "DEBUG dot", ast.getChildren()
+        a, b = ast.getChildren()
+        a = _parseQuery(a, position)
+        b = _parseQuery(b, position)
+        q = a + "." + b
+    elif ast.__class__ == Invert:                       #~ means regex!
+        a = ast.getChildren()[0]
+        a = _parseQuery(a, 1)
+#         print "DEBUG regex", a
+        q = re.compile(a, re.IGNORECASE)
+    elif ast.__class__ in LOGICAL_OPS:
+#         print "DEBUG logical and/or"
+        args = []
+        for x in ast.getChildren():                        #should always be 2 children
+            args.append(_parseQuery(x))
+        q = {LOGICAL_OPS[ast.__class__]: args}
+    else:
+        raise Exception("ERROR -- unknown ast op: %s" % ast.__class__)
+    return q
+    
+def parseSelect(exp):
     p = compiler.parse(exp)
 #     print p
     if p.getChildren()[0] == None:
@@ -92,6 +162,7 @@ if __name__ == "__main__":
     foo = 444
     bus = "BUSS"
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
-    mq = parseQuery("foo ==~ 'bar' or bus.fzz.bat != bus")
-#     print type(mq)
+    mq = parseQuery("-foo or bar=='bat'")
     print mq
+    ms = parseSelect("a")
+    print ms
