@@ -35,6 +35,8 @@ COMPARE_OPS = {'==': None, '<': '$lt', '>': '$gt', '<=': '$lte', '>=': '$gte', '
 def _parseQuery(ast, position=0):
 #     print "DEBUG parseQuery ast:", ast, "pos:", position
     q = ast
+    if type(q) in (str, unicode):
+        return q
     if ast.__class__ == Const:
         if position == 0:
             raise Exception("ERROR -- no const on left side")
@@ -104,59 +106,31 @@ def parseQuery(exp):
     return q
 
 def _parseSelect(ast):
+    print "DEBUG parseSelect ast:", ast
     q = ast
-    if ast.__class__ == Const:
-        if position == 0:
-            raise Exception("ERROR -- no const on left side")
-#         print "DEBUG Const", ast.getChildren()
-        q = ast.getChildren()[0]
-    elif ast.__class__ == Name:
+    if ast.__class__ == Name:
 #         print "DEBUG Name", ast.getChildren()
-        q = ast.getChildren()[0]
-        if position > 0:                                #convert to Python object in present namespace (avoid eval like the plague it is!)
-            try:
-                q = locals()[q]
-            except:
-                q = globals()[q]
-    elif ast.__class__ == Compare:
-        a, op, b = ast.getChildren()
-        op = COMPARE_OPS[op]
-        a = _parseSelect(a, 0)
-        b = _parseSelect(b, 1)
-#         print "DEBUG cmp", a, op, b
-        if op:
-            q = {a: {op: b}}
-        else:
-            q = {a: b}                                  #special eq case
+        q = {ast.getChildren()[0]: True}
     elif ast.__class__ == Getattr:
-#         print "DEBUG dot", ast.getChildren()
+        print "DEBUG dot", ast.getChildren()
         a, b = ast.getChildren()
-        a = _parseSelect(a, position)
-        b = _parseSelect(b, position)
+        
         q = a + "." + b
-    elif ast.__class__ == Invert:                       #~ means regex!
-        a = ast.getChildren()[0]
-        a = _parseSelect(a, 1)
-#         print "DEBUG regex", a
-        q = re.compile(a, re.IGNORECASE)
-    elif ast.__class__ == UnaryAdd:                       #+ means $exists
-        a = ast.getChildren()[0]
-#         print "DEBUG +", a
-        a = _parseSelect(a, 1)
-        q = {a: {'$exists': True}}
     elif ast.__class__ == UnarySub:                       #- minus -- missing
         a = ast.getChildren()[0]
-#         print "DEBUG +", a
-        a = _parseSelect(a, 1)
-        q = {a: {'$exists': False}}
-    elif ast.__class__ in LOGICAL_OPS:
-#         print "DEBUG logical and/or"
-        args = []
-        for x in ast.getChildren():                        #should always be 2 children
-            args.append(_parseSelect(x))
-        q = {LOGICAL_OPS[ast.__class__]: args}
+        a = _parseSelect(a)
+        print "DEBUG -", a
+        if type(a) == dict:
+            a = a.keys()[0]
+        q = {a: False}
+    elif ast.__class__ == Tuple:
+        q = {}
+        for e in ast.getChildren():
+            a = _parseSelect(e)
+            q.update(a)
     else:
         raise Exception("ERROR -- unknown ast op: %s" % ast.__class__)
+    print "  --> parseSelect returns:", q
     return q
     
 def parseSelect(exp):
@@ -175,7 +149,7 @@ if __name__ == "__main__":
     foo = 444
     bus = "BUSS"
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
-    mq = parseQuery("+foo")#"-foo or bar=='bat'")
+    mq = parseQuery("+foo.bar")
     print mq
-#     ms = parseSelect("a")
+#     ms = parseSelect("bar.fzz")
 #     print ms
