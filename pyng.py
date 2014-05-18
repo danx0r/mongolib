@@ -61,7 +61,7 @@ def _parseQuery(ast, position=0):
         else:
             q = {a: b}                                  #special eq case
     elif ast.__class__ == Getattr:
-        print "DEBUG dot", ast.getChildren()
+#         print "DEBUG dot", ast.getChildren()
         a, b = ast.getChildren()
         a = _parseQuery(a, position)
         b = _parseQuery(b, position)
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     dik['dat'] = 789
     
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
-    mq = parseQuery("foo == bus")
+    mq = parseQuery("-foo or x!=bat.bar")
     print mq
     mq = parseQuery("bar > 4 and foo == dik['dat']")
     print mq
