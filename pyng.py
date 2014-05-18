@@ -131,15 +131,21 @@ def _parseSelect(ast):
         if b.__class__ == UnarySub:
             b = -b.getChildren()[0].getChildren()[0]
         else:
-            b = b.getChildren()[0]                          #should be a Const
+            if b:
+                b = b.getChildren()[0]                          #should be a Const
+            else:
+                b = 0
         if c.__class__ == UnarySub:
             c = -c.getChildren()[0].getChildren()[0]
         else:
-            c = c.getChildren()[0]                          #should be a Const
+            if c:
+                c = c.getChildren()[0]                          #should be a Const
+            else:
+                c = 0                                       #None means [1:] syntax
 #         print "DEBUG []", a, b, c
         q = {a: {'$slice': [b, c-b]}}
     elif ast.__class__ == Subscript:
-        raise Exception("ERROR in parseSelect: subscripts not supported. Use slice notation instead. foo[-1:0] returns last element")
+        raise Exception("ERROR in parseSelect: subscripts not supported. Use slice notation instead. foo[-1:] returns last element (as list of one)")
     elif ast.__class__ == Tuple:
         q = {}
         for e in ast.getChildren():
@@ -168,5 +174,5 @@ if __name__ == "__main__":
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
     mq = parseQuery("+foo.bar")
     print mq
-    ms = parseSelect("bat.fff[-1:0], -bar.fzz")
+    ms = parseSelect("bat.fff[-1:], -bar.fzz")
     print ms
