@@ -97,7 +97,7 @@ def _parseQuery(ast, context, position=0):
         raise Exception("ERROR in parseQuery -- unknown ast op: %s" % ast.__class__)
     return q
     
-def parseQuery(exp, context):
+def parseQuery(exp, context=None):
     p = compiler.parse(exp)
 #     print p
     if p.getChildren()[0] == None:
@@ -177,7 +177,6 @@ def parseSelect(exp):
 if __name__ == "__main__":
     xyzabc = 1234
     print parseQuery("foo == xyzabc and bar=='xyz'", locals())
-    exit()
     foo = 444
     bus = "BUSS"
     class fuzz(object):
@@ -188,9 +187,9 @@ if __name__ == "__main__":
     dik['dat'] = 789
     
 #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
-    mq = parseQuery("-foo or x!=bat.bar")
+    mq = parseQuery("-foo or x!=bat.bar", locals())
     print mq
-    mq = parseQuery("bar > 4 and foo == dik['dat']")
+    mq = parseQuery("bar > 4 and foo == dik['dat']", locals())
     print mq
     ms = parseSelect("bat.fff[-1:], -bar.fzz")
     print ms
