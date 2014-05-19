@@ -165,6 +165,20 @@ def _parseSelect(ast):
         raise Exception("ERROR in parseSelect: unknown ast op: %s" % ast.__class__)
 #     print "  --> parseSelect returns:", q
     return q
+
+#
+# O ye innocents, avert thine eyes
+#
+import inspect
+
+def _get_value(name):
+    frame = inspect.stack()[1][0]
+    while name not in frame.f_locals:
+        frame = frame.f_back
+        if frame is None:
+            raise Exception("%s not found in stack frame" % name)
+#             return None
+    return frame.f_locals[name]
     
 def parseSelect(exp):
     p = compiler.parse(exp)
@@ -179,32 +193,21 @@ def parseSelect(exp):
     return q
 
 if __name__ == "__main__":
-    foo = 444
-    bus = "BUSS"
-    class fuzz(object):
-        pass
-    bat = fuzz()
-    bat.bar = 456
-    dik = {}
-    dik['dat'] = 789
-    
-#     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
-    mq = parseQuery("-foo or x!=bat.bar")
-    print mq
-    mq = parseQuery("bar > 4 and foo == dik['dat']")
-    print mq
-    ms = parseSelect("bat.fff[-1:], -bar.fzz")
-    print ms
-
-#
-# O ye innocents, avert thine eyes
-#
-import inspect
-
-def _get_value(name):
-    frame = inspect.stack()[1][0]
-    while name not in frame.f_locals:
-        frame = frame.f_back
-        if frame is None:
-            return None
-    return frame.f_locals[name]
+    x = 4
+    print parseQuery("foo == x and bar == 'xyz'")
+#     foo = 444
+#     bus = "BUSS"
+#     class fuzz(object):
+#         pass
+#     bat = fuzz()
+#     bat.bar = 456
+#     dik = {}
+#     dik['dat'] = 789
+#     
+# #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
+#     mq = parseQuery("-foo or x!=bat.bar")
+#     print mq
+#     mq = parseQuery("bar > 4 and foo == dik['dat']")
+#     print mq
+#     ms = parseSelect("bat.fff[-1:], -bar.fzz")
+#     print ms
