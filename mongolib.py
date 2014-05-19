@@ -306,3 +306,5 @@ if __name__ == "__main__":
     print query("test1").count()
     print query("test1", "foo==12345 and bar=='xyz'", fields="bar", exclude="_id")[0]
     print query("test1", "foo==12345 and bar=='xyz'", fields=("bar, -_id"))[0]
+    x = 'xyz'
+    print query("test1", "foo==12345 and bar==x", fields=("bar, -_id"))[0]
