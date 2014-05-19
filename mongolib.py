@@ -303,11 +303,8 @@ if __name__ == "__main__":
     from pprint import pprint
     print "connect:", connect("127.0.0.1", 27017, "test_mongolib")
     print query("test1").count()
-    print upsert("test1", "foo == 12345", foo=12345, bar="xyz")
+    print upsert("test1", "foo.baz == 12345", foo={'baz':12345}, bar="xyz")
     print query("test1").count()
-    print query("test1", "foo==12345 and bar=='xyz'", fields="bar", exclude="_id")[0]
-    xyz = 'xyz'
-    #fail:
-#     print query("test1", "foo==12345 and bar==xyz", fields=("bar, -_id"))[0]
-#     execfile("pyng.py")
-    print query("test1", parseQuery("foo==12345 and bar==xyz"), fields=("bar, -_id"))[0]
+    print query("test1", "foo.baz==12345 and bar=='xyz'", fields="bar", exclude="_id")[0]
+    xyz = {'abc':{'123':'xyz'}}
+    print query("test1", "foo.baz==12345 and bar==xyz['abc']['123']", fields=("bar, -_id"))[0]

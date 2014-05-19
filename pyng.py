@@ -203,9 +203,7 @@ import inspect
 
 def _get_value(name):
     frame = inspect.stack()[1][0]
-    i = 0
-    while i < 7 and name not in frame.f_locals:
-        i += 1
+    while name not in frame.f_locals:
         frame = frame.f_back
         if frame is None:
             return None
