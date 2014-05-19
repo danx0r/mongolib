@@ -60,10 +60,10 @@ def _query(collection, query=None, **kw):
     f = {}
     if type(fields) in (list, tuple, dict):
         fields = list(fields)
+        for field in fields:
+            f[field] = True
     else:
-        fields = [fields]
-    for field in fields:
-        f[field] = True
+        f = pyng.parseSelect(fields)
 
     if type(exclude) in (list, tuple, dict):
         fields = list(exclude)
@@ -71,6 +71,8 @@ def _query(collection, query=None, **kw):
         fields = [exclude]
     for field in fields:
         f[field] = False
+
+    print "DBG f:", f
 
 #     print "query:", q
 #     print "fields:", f
@@ -296,10 +298,11 @@ def _parse_args(args):
     return q
 """
 
-if __name__ == "__main__":   
+if __name__ == "__main__":
     from pprint import pprint
     print "connect:", connect("127.0.0.1", 27017, "test_mongolib")
     print query("test1").count()
-    print upsert("test1", "foo == 12345", foo=12345, bar="bat")
+    print upsert("test1", "foo == 12345", foo=12345, bar="xyz")
     print query("test1").count()
-    print query("test1", "foo==12345 and bar=='bat'")[0]
+    print query("test1", "foo==12345 and bar=='xyz'", fields="bar", exclude="_id")[0]
+    print query("test1", "foo==12345 and bar=='xyz'", fields=("bar, -_id"))[0]
