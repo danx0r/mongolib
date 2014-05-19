@@ -32,7 +32,7 @@ from compiler.ast import *
 LOGICAL_OPS = {And: '$and', Or: '$or'}
 BINARY_OPS = {And: '$and', Or: '$or'}
 COMPARE_OPS = {'==': None, '<': '$lt', '>': '$gt', '<=': '$lte', '>=': '$gte', '!=': '$ne'}
-def _parseQuery(ast, position=0):
+def _parseQuery(ast, context, position=0):
 #     print "DEBUG parseQuery ast:", ast, "pos:", position
     q = ast
     if type(q) in (str, unicode):
@@ -46,15 +46,12 @@ def _parseQuery(ast, position=0):
 #         print "DEBUG Name", position, ast.getChildren()
         q = ast.getChildren()[0]
         if position > 0:                                #convert to Python object in present namespace (avoid eval like the plague it is!)
-            try:
-                q = locals()[q]
-            except:
-                q = globals()[q]
+            q = context[q]
     elif ast.__class__ == Compare:
         a, op, b = ast.getChildren()
         op = COMPARE_OPS[op]
-        a = _parseQuery(a, 0)
-        b = _parseQuery(b, 1)
+        a = _parseQuery(a, context, 0)
+        b = _parseQuery(b, context, 1)
 #         print "DEBUG cmp", a, op, b
         if op:
             q = {a: {op: b}}
@@ -63,44 +60,44 @@ def _parseQuery(ast, position=0):
     elif ast.__class__ == Getattr:
 #         print "DEBUG dot", ast.getChildren()
         a, b = ast.getChildren()
-        a = _parseQuery(a, position)
-        b = _parseQuery(b, position)
+        a = _parseQuery(a, context, position)
+        b = _parseQuery(b, context, position)
         try:
             q = a + "." + b
         except:
             q = getattr(a, b)
     elif ast.__class__ == Invert:                       #~ means regex!
         a = ast.getChildren()[0]
-        a = _parseQuery(a, 1)
+        a = _parseQuery(a, context, 1)
 #         print "DEBUG regex", a
         q = re.compile(a, re.IGNORECASE)
     elif ast.__class__ == UnaryAdd:                       #+ means $exists
         a = ast.getChildren()[0]
 #         print "DEBUG +", a
-        a = _parseQuery(a, 0)
+        a = _parseQuery(a, context, 0)
         q = {a: {'$exists': True}}
     elif ast.__class__ == UnarySub:                       #- minus -- missing
         a = ast.getChildren()[0]
 #         print "DEBUG +", a
-        a = _parseQuery(a, 0)
+        a = _parseQuery(a, context, 0)
         q = {a: {'$exists': False}}
     elif ast.__class__ == Subscript:
 #         print "DEBUG subscript", ast.getChildren()
         a, b, b = ast.getChildren()
-        a = _parseQuery(a, position)
-        b = _parseQuery(b, position)
+        a = _parseQuery(a, context, position)
+        b = _parseQuery(b, context, position)
         q = a[b]
     elif ast.__class__ in LOGICAL_OPS:
 #         print "DEBUG logical and/or"
         args = []
         for x in ast.getChildren():                        #should always be 2 children
-            args.append(_parseQuery(x))
+            args.append(_parseQuery(x, context))
         q = {LOGICAL_OPS[ast.__class__]: args}
     else:
         raise Exception("ERROR in parseQuery -- unknown ast op: %s" % ast.__class__)
     return q
     
-def parseQuery(exp):
+def parseQuery(exp, context):
     p = compiler.parse(exp)
 #     print p
     if p.getChildren()[0] == None:
@@ -109,7 +106,7 @@ def parseQuery(exp):
         p = Const(p.getChildren()[0])                   #for some reason Python parses a single string as a module ref not const
     if p.__class__==Discard:
         p = p.getChildren()[0]
-    q = _parseQuery(p)
+    q = _parseQuery(p, context)
     if type(q) != dict:
         raise Exception("Error in parseQuery: didn't parse properly. +foo to test for exists")
     return q
@@ -178,6 +175,9 @@ def parseSelect(exp):
     return q
 
 if __name__ == "__main__":
+    xyzabc = 1234
+    print parseQuery("foo == xyzabc and bar=='xyz'", locals())
+    exit()
     foo = 444
     bus = "BUSS"
     class fuzz(object):
