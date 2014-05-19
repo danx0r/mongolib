@@ -20,7 +20,7 @@ The underlying principle is to provide the most pythonic, simplified, easy-to-wr
 """
 
 import pymongo, sys, traceback, re
-
+import pyng
 
 RECONNECT_TRIES = 10
 RECONNECT_WAIT = 30
@@ -41,7 +41,7 @@ def connect(host, port, db, user=None, pw=None):
     except:
         return traceback.format_exc()
 
-def _query(collection, *filter, **kw):
+def _query(collection, query=None, **kw):
 #     print "args:", filter
 #     print "keywords:", kw
     db = _db[collection]
@@ -50,10 +50,13 @@ def _query(collection, *filter, **kw):
     exclude = kw['exclude'] if 'exclude' in kw else ()
     desc = kw['desc'] if 'desc' in kw else None
     asc = kw['asc'] if 'asc' in kw else None
-    if len(filter) and type(filter[0]) == dict:
-        q = filter[0]
+    if type(query) == dict:
+        q = query
     else:
-        q = _parse_args(filter)
+        if query != None:
+            q = pyng.parseQuery(query)
+        else:
+            q = None
     f = {}
     if type(fields) in (list, tuple, dict):
         fields = list(fields)
@@ -106,15 +109,18 @@ def query(*args, **kw):
 #
 # update(db.table, "ass =", 4, bar=14, _UPSERT_=True, _MULTI_=True)
 #
-def _update(collection, *filter, **kw):
+def _update(collection, query, **kw):
 #     print "args:", filter
 #     print "kw:", kw
     db = _db[collection]
     q = {}
-    if len(filter) and type(filter[0]) == dict:
-        q = filter[0]
+    if type(query) == dict:
+        q = query
     else:
-        q = _parse_args(filter)
+        if query != None:
+            q = pyng.parseQuery(query)
+        else:
+            q = None
     multi = upsert = False
     if '_UPSERT_' in kw:
         del kw['_UPSERT_']
@@ -194,6 +200,7 @@ def uppush(*args, **kw):
 def insert(db, rec):
     return upsert(db, {}, **rec)
 
+"""
 _op_table = {
     "<": "$lt",
     ">": "$gt",
@@ -287,6 +294,7 @@ def _parse_args(args):
                 else:
                     raise Exception("ERROR: unknown operation in _parse_args: %s" % op)
     return q
+"""
 
 if __name__ == "__main__":   
     from pprint import pprint
