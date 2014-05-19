@@ -294,4 +294,4 @@ if __name__ == "__main__":
     print query("test1").count()
     print upsert("test1", "foo == 12345", foo=12345, bar="bat")
     print query("test1").count()
-    print query("test1", "foo==12345", "bar==bat")[0]
+    print query("test1", "foo==12345 and bar=='bat'")[0]
