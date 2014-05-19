@@ -102,6 +102,7 @@ def _parseQuery(ast, position=0):
     return q
     
 def parseQuery(exp):
+    xyzabc = 12345678
     p = compiler.parse(exp)
 #     print p
     if p.getChildren()[0] == None:
@@ -173,11 +174,14 @@ import inspect
 
 def _get_value(name):
     frame = inspect.stack()[1][0]
+    stk = 0
     while name not in frame.f_locals:
         frame = frame.f_back
         if frame is None:
             raise Exception("%s not found in stack frame" % name)
 #             return None
+        stk += 1
+    print "DBG get_value stack:", stk
     return frame.f_locals[name]
     
 def parseSelect(exp):
@@ -193,8 +197,8 @@ def parseSelect(exp):
     return q
 
 if __name__ == "__main__":
-    x = 4
-    print parseQuery("foo == x and bar == 'xyz'")
+    xyzabc = 4
+    print parseQuery("foo == xyzabc and bar == 'xyz'")
 #     foo = 444
 #     bus = "BUSS"
 #     class fuzz(object):

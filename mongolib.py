@@ -306,5 +306,5 @@ if __name__ == "__main__":
     print upsert("test1", "foo.baz == 12345", foo={'baz':12345}, bar="xyz")
     print query("test1").count()
     print query("test1", "foo.baz==12345 and bar=='xyz'", fields="bar", exclude="_id")[0]
-    xyz = {'abc':{'123':'xyz'}}
-    print query("test1", "foo.baz==12345 and bar==xyz['abc']['123']", fields=("bar, -_id"))[0]
+    xyzabc = {'abc':{'123':'xyz'}}
+    print query("test1", "foo.baz==12345 and bar==xyzabc['abc']['123']", fields=("bar, -_id"))[0]
