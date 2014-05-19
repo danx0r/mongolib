@@ -72,7 +72,7 @@ def _query(collection, query=None, context=None, **kw):
     for field in fields:
         f[field] = False
 
-    print "DBG f:", f
+#     print "DBG f:", f
 
 #     print "query:", q
 #     print "fields:", f
