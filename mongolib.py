@@ -20,7 +20,8 @@ The underlying principle is to provide the most pythonic, simplified, easy-to-wr
 """
 
 import pymongo, sys, traceback, re
-import pyng
+from pyng import parseQuery, parseSelect
+# execfile("pyng.py")
 
 RECONNECT_TRIES = 10
 RECONNECT_WAIT = 30
@@ -54,7 +55,7 @@ def _query(collection, query=None, **kw):
         q = query
     else:
         if query != None:
-            q = pyng.parseQuery(query)
+            q = parseQuery(query)
         else:
             q = None
     f = {}
@@ -63,7 +64,7 @@ def _query(collection, query=None, **kw):
         for field in fields:
             f[field] = True
     else:
-        f = pyng.parseSelect(fields)
+        f = parseSelect(fields)
 
     if type(exclude) in (list, tuple, dict):
         fields = list(exclude)
@@ -72,7 +73,7 @@ def _query(collection, query=None, **kw):
     for field in fields:
         f[field] = False
 
-    print "DBG f:", f
+#     print "DBG f:", f
 
 #     print "query:", q
 #     print "fields:", f
@@ -120,7 +121,7 @@ def _update(collection, query, **kw):
         q = query
     else:
         if query != None:
-            q = pyng.parseQuery(query)
+            q = parseQuery(query)
         else:
             q = None
     multi = upsert = False
@@ -305,4 +306,8 @@ if __name__ == "__main__":
     print upsert("test1", "foo == 12345", foo=12345, bar="xyz")
     print query("test1").count()
     print query("test1", "foo==12345 and bar=='xyz'", fields="bar", exclude="_id")[0]
-    print query("test1", "foo==12345 and bar=='xyz'", fields=("bar, -_id"))[0]
+    xyz = 'xyz'
+    #fail:
+#     print query("test1", "foo==12345 and bar==xyz", fields=("bar, -_id"))[0]
+#     execfile("pyng.py")
+    print query("test1", parseQuery("foo==12345 and bar==xyz"), fields=("bar, -_id"))[0]

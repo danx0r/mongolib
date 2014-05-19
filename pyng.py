@@ -46,10 +46,11 @@ def _parseQuery(ast, position=0):
 #         print "DEBUG Name", position, ast.getChildren()
         q = ast.getChildren()[0]
         if position > 0:                                #convert to Python object in present namespace (avoid eval like the plague it is!)
-            try:
-                q = locals()[q]
-            except:
-                q = globals()[q]
+            q = _get_value(q)
+#             try:
+#                 q = locals()[q]
+#             except:
+#                 q = globals()[q]
     elif ast.__class__ == Compare:
         a, op, b = ast.getChildren()
         op = COMPARE_OPS[op]
@@ -194,3 +195,18 @@ if __name__ == "__main__":
     print mq
     ms = parseSelect("bat.fff[-1:], -bar.fzz")
     print ms
+
+#
+# O ye innocents, avert thine eyes
+#
+import inspect
+
+def _get_value(name):
+    frame = inspect.stack()[1][0]
+    i = 0
+    while i < 7 and name not in frame.f_locals:
+        i += 1
+        frame = frame.f_back
+        if frame is None:
+            return None
+    return frame.f_locals[name]
