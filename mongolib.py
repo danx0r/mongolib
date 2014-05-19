@@ -290,5 +290,8 @@ def _parse_args(args):
 
 if __name__ == "__main__":   
     from pprint import pprint
-    import mongolib
-    print mongolib.update
+    print "connect:", connect("127.0.0.1", 27017, "test_mongolib")
+    print query("test1").count()
+    print upsert("test1", "foo == 12345", foo=12345, bar="bat")
+    print query("test1").count()
+    print query("test1", "foo==12345", "bar==bat")[0]
