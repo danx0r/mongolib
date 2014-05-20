@@ -33,7 +33,7 @@ LOGICAL_OPS = {And: '$and', Or: '$or'}
 BINARY_OPS = {And: '$and', Or: '$or'}
 COMPARE_OPS = {'==': None, '<': '$lt', '>': '$gt', '<=': '$lte', '>=': '$gte', '!=': '$ne'}
 def _parseQuery(ast, context, position=0):
-    print "DEBUG parseQuery ast:", ast, "pos:", position
+#     print "DEBUG parseQuery ast:", ast, "pos:", position
     q = ast
     if type(q) in (str, unicode):
         return q
@@ -88,10 +88,18 @@ def _parseQuery(ast, context, position=0):
         b = _parseQuery(b, context, position)
         q = a[b]
     elif ast.__class__ == List:
-#         print "DEBUG subscript", ast.getChildren()
         q = []
-        for x in ast.getChildren():                        #should always be 2 children
+        for x in ast.getChildren():
             q.append(_parseQuery(x, context, 1))
+    elif ast.__class__ == Dict:
+        q = {}
+        kids = list(ast.getChildren())
+#         print "DEBUG {} kids:", kids
+        for i in range(0, len(kids), 2):
+            k = _parseQuery(kids[i], context, 1)
+            v = _parseQuery(kids[i+1], context, 1)
+#             print "  DEBUG k,v:", k, v
+            q[k] = v
     elif ast.__class__ in LOGICAL_OPS:
 #         print "DEBUG logical and/or"
         args = []
@@ -181,9 +189,8 @@ def parseSelect(exp):
 
 if __name__ == "__main__":
     xyzabc = 1234
-    print parseQuery("foo == [xyzabc]", locals())
-    exit()
-    print parseQuery("foo == xyzabc and bar=='xyz'", locals())
+    print parseQuery("foo == {'buzz':xyzabc, 'fizz':123}", locals())
+    print parseQuery("foo == xyzabc and bar!=[]", locals())
     foo = 444
     bus = "BUSS"
     class fuzz(object):
