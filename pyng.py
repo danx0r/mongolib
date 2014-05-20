@@ -33,7 +33,7 @@ LOGICAL_OPS = {And: '$and', Or: '$or'}
 BINARY_OPS = {And: '$and', Or: '$or'}
 COMPARE_OPS = {'==': None, '<': '$lt', '>': '$gt', '<=': '$lte', '>=': '$gte', '!=': '$ne'}
 def _parseQuery(ast, context, position=0):
-#     print "DEBUG parseQuery ast:", ast, "pos:", position
+    print "DEBUG parseQuery ast:", ast, "pos:", position
     q = ast
     if type(q) in (str, unicode):
         return q
@@ -87,6 +87,11 @@ def _parseQuery(ast, context, position=0):
         a = _parseQuery(a, context, position)
         b = _parseQuery(b, context, position)
         q = a[b]
+    elif ast.__class__ == List:
+#         print "DEBUG subscript", ast.getChildren()
+        q = []
+        for x in ast.getChildren():                        #should always be 2 children
+            q.append(_parseQuery(x, context, 1))
     elif ast.__class__ in LOGICAL_OPS:
 #         print "DEBUG logical and/or"
         args = []
@@ -176,6 +181,8 @@ def parseSelect(exp):
 
 if __name__ == "__main__":
     xyzabc = 1234
+    print parseQuery("foo == [xyzabc]", locals())
+    exit()
     print parseQuery("foo == xyzabc and bar=='xyz'", locals())
     foo = 444
     bus = "BUSS"
