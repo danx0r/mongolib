@@ -156,12 +156,15 @@ def _parseSelect(ast):
         if c.__class__ == UnarySub:
             c = -c.getChildren()[0].getChildren()[0]
         else:
-            if c:
+            if c != None:
                 c = c.getChildren()[0]                          #should be a Const
             else:
                 c = 0                                       #None means [1:] syntax
-#         print "DEBUG []", a, b, c
-        q = {a: {'$slice': [b, c-b]}}
+        print "DEBUG []", a, b, c
+        if c:
+            q = {a: {'$slice': [b, c-b]}}
+        else:                                               #emulate [10:] py syntax
+            q = {a: {'$slice': [b, 99999999]}}
     elif ast.__class__ == Subscript:
         raise Exception("ERROR in parseSelect: subscripts not supported. Use slice notation instead. foo[-1:] returns last element (as list of one)")
     elif ast.__class__ == Tuple:
