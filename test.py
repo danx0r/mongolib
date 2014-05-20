@@ -15,7 +15,8 @@ def test():
     print query("test1", "foo == x and bar=='xyz'", locals(), fields="bar", exclude="_id")[0]
     xyz = {'abc':{'123':'xyz'}}
     print query("test1", "foo.baz==12345 and bar==xyz['abc']['123']", locals(), fields=("bar, -_id"))[0]
-    print upsert("test1", "+box", box = [{'a':11}, {'a':12}])
-    print query("test1", "box[1].a == 12", fields="-_id, box[1:]")[0]
+    print upsert("test1", "+box", box = [{'a':11}, {'a':12, 'b':44}], foo="bar", bar="foo")
+    print query("test1", "box[1].a == 12", fields={'$and': [{'box': True}, {'box': {'$slice': [1, 2]}}]})[0]
+    print query("test1", "box[1].a == 12", fields="box[1:2], -foo, -bar, -_id")[0]
 
 test()

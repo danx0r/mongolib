@@ -190,6 +190,7 @@ def parseSelect(exp):
     if p.__class__==Discard:
         p = p.getChildren()[0]
     q = _parseSelect(p)
+    print "DEBUG parseSelect:", q
     return q
 
 if __name__ == "__main__":
