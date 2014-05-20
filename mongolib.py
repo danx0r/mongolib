@@ -58,12 +58,14 @@ def _query(collection, query=None, context=None, **kw):
         else:
             q = None
     f = {}
-    if type(fields) in (list, tuple, dict):
+    if type(fields) in (list, tuple):
         fields = list(fields)
         for field in fields:
             f[field] = True
-    else:
+    elif type(fields) in (str, unicode):
         f = pyng.parseSelect(fields)
+    else:
+        f = fields
 
     if type(exclude) in (list, tuple, dict):
         fields = list(exclude)
