@@ -84,8 +84,11 @@ def _parseQuery(ast, context, position=0):
 #         print "DEBUG subscript", ast.getChildren()
         a, b, b = ast.getChildren()
         a = _parseQuery(a, context, position)
-        b = _parseQuery(b, context, position)
-        q = a[b]
+        b = _parseQuery(b, context, 1)
+        if position == 1:                                   #right side? eval
+            q = a[b]
+        else:
+            q = a + "." + str(b)                            #left side? that's how mongo rolls
     elif ast.__class__ == List:
         q = []
         for x in ast.getChildren():
@@ -160,7 +163,7 @@ def _parseSelect(ast):
                 c = c.getChildren()[0]                          #should be a Const
             else:
                 c = 0                                       #None means [1:] syntax
-        print "DEBUG []", a, b, c
+#         print "DEBUG []", a, b, c
         if c:
             q = {a: {'$slice': [b, c-b]}}
         else:                                               #emulate [10:] py syntax
@@ -190,7 +193,9 @@ def parseSelect(exp):
     return q
 
 if __name__ == "__main__":
-    print parseQuery("foo == {'$size': 2}", locals())
+    abc = [33]
+    print parseQuery("box == abc[0]", locals())
+    print parseQuery("box[1] == 2")
     exit()
     xyzabc = 1234
     print parseQuery("foo == {'buzz':xyzabc, 'fizz':123}", locals())

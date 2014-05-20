@@ -17,6 +17,6 @@ def test():
     print query("test1", "foo.baz==12345 and bar==xyz['abc']['123']", locals(), fields=("bar, -_id"))[0]
     print upsert("test1", "box == [1,2,3]", box=[1,2,3])
     print query("test1", "+box")[0]
-    print query("test1", "box == {'$size' : 3}", fields="-_id, box[1:]")[0]
+    print query("test1", "box[1] == 2", fields="-_id, box[1:]")[0]
 
 test()
