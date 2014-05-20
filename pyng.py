@@ -30,7 +30,6 @@ import compiler, sys, re
 from compiler.ast import *
 
 LOGICAL_OPS = {And: '$and', Or: '$or'}
-BINARY_OPS = {And: '$and', Or: '$or'}
 COMPARE_OPS = {'==': None, '<': '$lt', '>': '$gt', '<=': '$lte', '>=': '$gte', '!=': '$ne'}
 def _parseQuery(ast, context, position=0):
 #     print "DEBUG parseQuery ast:", ast, "pos:", position
@@ -188,6 +187,8 @@ def parseSelect(exp):
     return q
 
 if __name__ == "__main__":
+    print parseQuery("foo == {'$size': 2}", locals())
+    exit()
     xyzabc = 1234
     print parseQuery("foo == {'buzz':xyzabc, 'fizz':123}", locals())
     print parseQuery("foo == xyzabc and bar!=[]", locals())
