@@ -42,7 +42,7 @@ def connect(db=config.database, host=config.host, port=config.port, user=config.
     try:
         _client = pymongo.MongoClient(host, port)
         if user:
-            _client.test.authenticate(user, pw)
+            _client[db].authenticate(user, pw)
         _db = _client[db]
         return True
     except:
@@ -80,8 +80,8 @@ def _query(collection, query=None, context=None, **kw):
         fields = [exclude]
     for field in fields:
         f[field] = False
-#     print "query:", q
-#     print "fields:", f
+    print "query:", q
+    print "fields:", f
     if len(f):
         cur = db.find(q, f)
     else:
