@@ -48,7 +48,7 @@ def _parseQuery(ast, context, position=0):
             if context == None:
                 raise Exception("ERROR (mongolib): you need to specify context for %s, typically by adding 'locals()' to the call" % q)
             if q not in context:
-                raise Exception("ERROR: (mongolib): %s not found in specified context" % q)
+                raise Exception("ERROR: (mongolib): %s not found in specified context -- add globals()?" % q)
             q = context[q]
     elif ast.__class__ == Compare:
         a, op, b = ast.getChildren()
