@@ -1,5 +1,4 @@
-# from mongolib import *
-execfile("mongolib.py")
+from mongolib import *
 
 xyzabc = 1234
 def test():
