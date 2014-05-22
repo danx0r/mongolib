@@ -2,7 +2,7 @@
 # shell for simple mongo ops
 # run in ipython for best result
 #
-import sys, bson
+import sys, bson, traceback
 sys.path.append('../')
 from mongolib import *
 import mongolib
@@ -24,11 +24,11 @@ def __short_repr__(self):
 
 bson.binary.Binary.__repr__ = __short_repr__
 
-if len(sys.argv) < 2:
-    print "USAGE: ipython -i shell.py database_name"
-    exit()
-else:
-    connect(sys.argv[1])
+try:
+    if len(sys.argv) > 1:
+        connect(sys.argv[1])
+    else:
+        connect()
     _db = mongolib._db
     print "available collections:"
     try:
@@ -39,3 +39,6 @@ else:
                 print "oops, no access!"
     except:
         print "oops, no access!"
+except:
+    print traceback.format_exc()
+    print "USAGE: ipython -i shell.py database_name"
