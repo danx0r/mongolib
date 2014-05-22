@@ -24,13 +24,13 @@ and
 
 you connect using:
 
-    connect(host, port, db, user=None, pw=None)
+    connect("database_name")
+    (will use config.py if found for defaults
 
 The db is remembered for subsequent calls. comparisons include typical operators,
-plus ~= for regex, ~~ for case-insensitive regex. Example:
+plus ==~ for (case insensitive) regex
 
-    query("test", "foo~~BAR")
+    query("test", "foo ==~ 'bar'")
     #will return all docs where 'bar' is in foo, with any case
 
-Other methods include upsert, upmulti
-Todo: remove(), safe_drop()
+Other methods include upsert, upmulti, insert
