@@ -80,8 +80,8 @@ def _query(collection, query=None, context=None, **kw):
         fields = [exclude]
     for field in fields:
         f[field] = False
-    print "query:", q
-    print "fields:", f
+##    print "query:", q
+##    print "fields:", f
     if len(f):
         cur = db.find(q, f)
     else:
