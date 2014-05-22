@@ -1,4 +1,4 @@
-Simple syntax for mongo query & update.
+Simple syntax for mongo query & update. Sits on pymongo
 
 
  mongolib is a simple layer of convenience routines to help with everyday tasks using mongodb in python.
