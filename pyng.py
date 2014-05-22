@@ -44,7 +44,11 @@ def _parseQuery(ast, context, position=0):
     elif ast.__class__ == Name:
 #         print "DEBUG Name", position, ast.getChildren()
         q = ast.getChildren()[0]
-        if position > 0:                                #convert to Python object in present namespace (avoid eval like the plague it is!)
+        if position > 0:                                #convert to Python object in specified namespace
+            if context == None:
+                raise Exception("ERROR (mongolib): you need to specify context for %s, typically by adding 'locals()' to the call" % q)
+            if q not in context:
+                raise Exception("ERROR: (mongolib): %s not found in specified context" % q)
             q = context[q]
     elif ast.__class__ == Compare:
         a, op, b = ast.getChildren()
