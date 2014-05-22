@@ -7,7 +7,7 @@ def test():
     abc=333
     x=111
     print mng.parseQuery("foo == xyzabc or bat == abc and bar=='xyz'", locals(), globals())
-    print "connect:", mng.connect("test_mongolib")
+    print "connect:", mng.connect()
     print mng.upsert("test1", "foo == x", locals(), foo=x, bar="xyz")
     print mng.update("test1", "foo == x", locals(), **{'foo': x, 'bar': "xyz"})
     print mng.query("test1").count()
