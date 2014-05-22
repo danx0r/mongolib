@@ -21,11 +21,15 @@ The underlying principle is to provide the most pythonic, simplified, easy-to-wr
 
 import pymongo, sys, traceback, re
 import pyng
+try:
+    import config
+except:
+    config = {'host': "127.0.0.1", 'port':27017, 'user':None, 'pwd':None}
 
 RECONNECT_TRIES = 10
 RECONNECT_WAIT = 30
 
-def connect(host, port, db, user=None, pw=None):
+def connect(db, host=config['host'], port=config['port'], user=config['user'], pw=config['pwd']):
     global _db, _dbname, _host, _port, _user, _pw
     _host = host
     _port = port
