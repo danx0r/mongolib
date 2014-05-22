@@ -116,7 +116,10 @@ def _parseQuery(ast, context, position=0):
         raise Exception("ERROR in parseQuery -- unknown ast op: %s" % ast.__class__)
     return q
     
-def parseQuery(exp, context=None):
+def parseQuery(exp, context=None, context2=None):
+    if context and context2:
+        context = dict(context)
+        context.update(context2)
     p = compiler.parse(exp)
 #     print p
     if p.getChildren()[0] == None:

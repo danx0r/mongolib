@@ -1,13 +1,11 @@
-from mongolib import *
-
-# class foo(object):
-#     pass
+# from mongolib import *
+execfile("mongolib.py")
 
 xyzabc = 1234
 def test():
     abc=333
     x=111
-    print pyng.parseQuery("foo == abc or bat == abc and bar=='xyz'", locals())
+    print pyng.parseQuery("foo == xyzabc or bat == abc and bar=='xyz'", locals(), globals())
     print "connect:", connect("127.0.0.1", 27017, "test_mongolib")
     print upsert("test1", "foo == x", locals(), foo=x, bar="xyz")
     print query("test1").count()
