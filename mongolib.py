@@ -201,6 +201,7 @@ def uppush(*args, **kw):
 def insert(db, rec):
     return upsert(db, {}, **rec)
 
+parseQuery = pyng.parseQuery
 
 if __name__ == "__main__":
     from pprint import pprint
