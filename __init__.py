@@ -24,12 +24,15 @@ import pyng
 try:
     import config
 except:
-    config = {'host': "127.0.0.1", 'port':27017, 'user':None, 'pwd':None, 'database':None}
+    class foo(object):
+        pass
+    config = foo()
+    config.__dict__.update({'host': "127.0.0.1", 'port':27017, 'user':None, 'pwd':None, 'database':None})
 
 RECONNECT_TRIES = 10
 RECONNECT_WAIT = 30
 
-def connect(db=config['database'], host=config['host'], port=config['port'], user=config['user'], pw=config['pwd']):
+def connect(db=config.database, host=config.host, port=config.port, user=config.user, pw=config.pwd):
     global _db, _dbname, _host, _port, _user, _pw
     _host = host
     _port = port
@@ -202,7 +205,9 @@ def uppush(*args, **kw):
             kw[key.replace("__", '.')] = val
     return update(*args, _UPDATE_={'$push': kw})
 
-def insert(db, rec):
+def insert(db, *args, **rec):
+    if len(args):
+        return upsert(db, {}, *args)
     return upsert(db, {}, **rec)
 
 parseQuery = pyng.parseQuery
