@@ -1,5 +1,6 @@
-# from mongolib import *
-import __init__ as mng
+import sys
+sys.path.append('../')
+import mongolib as mng
 
 xyzabc = 1234
 def test():
