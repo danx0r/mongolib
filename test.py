@@ -7,6 +7,7 @@ def test():
     print pyng.parseQuery("foo == xyzabc or bat == abc and bar=='xyz'", locals(), globals())
     print "connect:", connect("127.0.0.1", 27017, "test_mongolib")
     print upsert("test1", "foo == x", locals(), foo=x, bar="xyz")
+    print update("test1", "foo == x", locals(), **{'foo': x, 'bar': "xyz"})
     print query("test1").count()
     print pyng.parseQuery("foo == x and bar=='xyz'", locals())
     print query("test1", "foo == x and bar=='xyz'", locals(), fields="bar", exclude="_id")[0]
