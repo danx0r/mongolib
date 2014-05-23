@@ -3,9 +3,11 @@
 # run in ipython for best result
 #
 import sys, bson, traceback
-sys.path.append('../')
-from mongolib import *
-import mongolib
+# sys.path.append('../')
+# from mongolib import *
+# import mongolib
+from __init__ import *
+import __init__ as mongolib
 from datetime import datetime
 from datetime import timedelta
 
@@ -28,9 +30,9 @@ bson.binary.Binary.__repr__ = __short_repr__
 
 try:
     if len(sys.argv) > 1:
-        connect(sys.argv[1])
+        print "connect:", connect(sys.argv[1])
     else:
-        connect()
+        print "connect:", connect()
     _db = mongolib._db
     print "available collections:"
     try:
