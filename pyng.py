@@ -26,7 +26,7 @@ use directly in mongolib:
 update("foo == 'bar' or bus > 4", fields=('foo', 'bar', 'bus'))
 """
 
-import compiler, sys, re
+import compiler, sys, re, __builtin__
 from compiler.ast import *
 
 LOGICAL_OPS = {And: '$and', Or: '$or'}
@@ -47,11 +47,14 @@ def _parseQuery(ast, context, position=0):
 #         print "DEBUG Name", position, ast.getChildren()
         q = ast.getChildren()[0]
         if position > 0:                                #convert to Python object in specified namespace
-            if context == None:
-                raise Exception("ERROR (mongolib): you need to specify context for %s, typically by adding 'locals()' to the call" % q)
-            if q not in context:
-                raise Exception("ERROR: (mongolib): %s not found in specified context -- add globals()?" % q)
-            q = context[q]
+            if hasattr(__builtin__, q):
+                q = getattr(__builtin__, q)
+            else:
+                if context == None:
+                    raise Exception("ERROR (mongolib): you need to specify context for %s, typically by adding 'locals()' to the call" % q)
+                if q not in context:
+                    raise Exception("ERROR: (mongolib): %s not found in specified context -- add globals()?" % q)
+                q = context[q]
     elif ast.__class__ == Compare:
         a, op, b = ast.getChildren()
         op = COMPARE_OPS[op]
@@ -210,7 +213,7 @@ def parseSelect(exp):
     return q
 
 if __name__ == "__main__":
-    print parseQuery("ass != 'mike'")
+    print parseQuery("ass == False")
 #     print parseQuery("ass == -1")
 #     print parseQuery("-ass")
 #     abc = [33]
