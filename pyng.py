@@ -82,8 +82,11 @@ def _parseQuery(ast, context, position=0):
     elif ast.__class__ == UnarySub:                       #- minus -- missing
         a = ast.getChildren()[0]
 #         print "DEBUG +", a
-        a = _parseQuery(a, context, 0)
-        q = {a: {'$exists': False}}
+        a = _parseQuery(a, context, position)
+        if position == 0:
+            q = {a: {'$exists': False}}
+        else:
+            q = -a
     elif ast.__class__ == Subscript:
 #         print "DEBUG subscript", ast.getChildren()
         a, b, b = ast.getChildren()
@@ -202,26 +205,27 @@ def parseSelect(exp):
     return q
 
 if __name__ == "__main__":
-    abc = [33]
-    print parseQuery("box == abc[0]", locals())
-    print parseQuery("box[1] == 2")
-    exit()
-    xyzabc = 1234
-    print parseQuery("foo == {'buzz':xyzabc, 'fizz':123}", locals())
-    print parseQuery("foo == xyzabc and bar!=[]", locals())
-    foo = 444
-    bus = "BUSS"
-    class fuzz(object):
-        pass
-    bat = fuzz()
-    bat.bar = 456
-    dik = {}
-    dik['dat'] = 789
-    
-#     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
-    mq = parseQuery("-foo or x!=bat.bar", locals())
-    print mq
-    mq = parseQuery("bar > 4 and foo == dik['dat']", locals())
-    print mq
-    ms = parseSelect("bat.fff[-1:], -bar.fzz")
-    print ms
+    print parseQuery("ass == -1")
+    print parseQuery("-ass")
+#     abc = [33]
+#     print parseQuery("box == abc[0]", locals())
+#     print parseQuery("box[1] == 2")
+#     xyzabc = 1234
+#     print parseQuery("foo == {'buzz':xyzabc, 'fizz':123}", locals())
+#     print parseQuery("foo == xyzabc and bar!=[]", locals())
+#     foo = 444
+#     bus = "BUSS"
+#     class fuzz(object):
+#         pass
+#     bat = fuzz()
+#     bat.bar = 456
+#     dik = {}
+#     dik['dat'] = 789
+#     
+# #     mq = parse("foo == 'bar' or foo < bus.fzz.bat")        #need better error checks for right side .syntax
+#     mq = parseQuery("-foo or x!=bat.bar", locals())
+#     print mq
+#     mq = parseQuery("bar > 4 and foo == dik['dat']", locals())
+#     print mq
+#     ms = parseSelect("bat.fff[-1:], -bar.fzz")
+#     print ms
