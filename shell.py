@@ -3,9 +3,11 @@
 # run in ipython for best result
 #
 import sys, bson, traceback
-sys.path.append('../')
-from mongolib import *
-import mongolib
+# sys.path.append('../')
+# from mongolib import *
+# import mongolib
+from __init__ import *
+import __init__ as mongolib
 from datetime import datetime
 from datetime import timedelta
 
