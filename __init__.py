@@ -42,7 +42,7 @@ def connect(db=config.database, host=config.host, port=config.port, user=config.
     try:
         _client = pymongo.MongoClient(host, port)
         if user:
-            _client.test.authenticate(user, pw)
+            _client[db].authenticate(user, pw)
         _db = _client[db]
         return True
     except:
@@ -80,8 +80,8 @@ def _query(collection, query=None, context=None, **kw):
         fields = [exclude]
     for field in fields:
         f[field] = False
-#     print "query:", q
-#     print "fields:", f
+##    print "query:", q
+##    print "fields:", f
     if len(f):
         cur = db.find(q, f)
     else:
@@ -150,8 +150,8 @@ def _update(collection, query, context=None, **kw):
                 q = {'_id': kw['_id']}
                 del kw['_id']
         up = {'$set': kw}
-#     print "query:", q
-#     print "update:", up
+##    print "query:", q
+##    print "update:", up
     if q == {}:
         return db.insert(kw)
     else:
@@ -194,6 +194,7 @@ def upmulti(*args, **kw):
     return update(*args, **kw)
 
 def upsert(*args, **kw):
+##    print "DEBUG upsert:", args, kw
     kw['_UPSERT_'] = True
     return update(*args, **kw)
 
@@ -207,7 +208,7 @@ def uppush(*args, **kw):
 
 def insert(db, *args, **rec):
     if len(args):
-        return upsert(db, {}, *args)
+        return upsert(db, {}, **args[0])
     return upsert(db, {}, **rec)
 
 parseQuery = pyng.parseQuery
