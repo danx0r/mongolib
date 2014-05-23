@@ -6,6 +6,8 @@ import sys, bson
 sys.path.append('../')
 from mongolib import *
 import mongolib
+from datetime import datetime
+from datetime import timedelta
 
 def _prompt_drop_collection(*args, **kw):
     print "drop", args, kw
