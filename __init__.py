@@ -118,7 +118,7 @@ def query(*args, **kw):
 # update(db.table, "ass =", 4, bar=14, _UPSERT_=True, _MULTI_=True)
 #
 def _update(collection, query, context=None, **kw):
-#     print "args:", filter
+#     print "args:", collection, query#, context
 #     print "kw:", kw
     db = _db[collection]
     q = {}
@@ -150,8 +150,8 @@ def _update(collection, query, context=None, **kw):
                 q = {'_id': kw['_id']}
                 del kw['_id']
         up = {'$set': kw}
-##    print "query:", q
-##    print "update:", up
+#     print "query:", q
+#     print "update:", up
     if q == {}:
         return db.insert(kw)
     else:
@@ -205,6 +205,10 @@ def uppush(*args, **kw):
             del kw[key]
             kw[key.replace("__", '.')] = val
     return update(*args, _UPDATE_={'$push': kw})
+
+def replace(*args):
+    kw = {'_UPDATE_': args[-1]}
+    return update(*args[:-1], **kw)
 
 def insert(db, *args, **rec):
     if len(args):
