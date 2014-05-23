@@ -16,5 +16,7 @@ def test():
     print mng.query("test1", "box[1].a == 12", fields={'$and': [{'box': True}, {'box': {'$slice': [1, 2]}}]})[0]
     print mng.query("test1", "box[1].a == 12", fields="box[-1:], -_id, NO_OTHER_FIELDS")[0]
     print mng._db.test1.count()
-
+    rec = mng.query("test1")[0]
+    mng.update("test1", "_id==rec['_id']", locals(), fee="SUCCESS")
+    print mng.query("test1", "_id==rec['_id']", locals())[0]['fee']
 test()
