@@ -31,6 +31,8 @@ from compiler.ast import *
 
 LOGICAL_OPS = {And: '$and', Or: '$or'}
 COMPARE_OPS = {'==': None, '<': '$lt', '>': '$gt', '<=': '$lte', '>=': '$gte', '!=': '$ne'}
+rx = re.compile("xy")
+REXTYPE = type(rx)
 def _parseQuery(ast, context, position=0):
 #     print "DEBUG parseQuery ast:", ast, "pos:", position
     q = ast
@@ -57,7 +59,10 @@ def _parseQuery(ast, context, position=0):
         b = _parseQuery(b, context, 1)
 #         print "DEBUG cmp", a, op, b
         if op:
-            q = {a: {op: b}}
+            if op == '$ne' and type(b) == REXTYPE:
+                q = {a: {'$not': b}}
+            else:
+                q = {a: {op: b}}
         else:
             q = {a: b}                                  #special eq case
     elif ast.__class__ == Getattr:
@@ -205,8 +210,9 @@ def parseSelect(exp):
     return q
 
 if __name__ == "__main__":
-    print parseQuery("ass == -1")
-    print parseQuery("-ass")
+    print parseQuery("ass != 'mike'")
+#     print parseQuery("ass == -1")
+#     print parseQuery("-ass")
 #     abc = [33]
 #     print parseQuery("box == abc[0]", locals())
 #     print parseQuery("box[1] == 2")
