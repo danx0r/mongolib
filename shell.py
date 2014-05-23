@@ -28,10 +28,11 @@ bson.binary.Binary.__repr__ = __short_repr__
 
 try:
     if len(sys.argv) > 1:
-        connect(sys.argv[1])
+        print "connect:", connect(sys.argv[1])
     else:
-        connect()
+        print "connect:", connect()
     _db = mongolib._db
+    print "connected to:", _db
     print "available collections:"
     try:
         for c in _db.collection_names(): 
