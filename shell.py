@@ -10,6 +10,7 @@ from __init__ import *
 import __init__ as mongolib
 from datetime import datetime
 from datetime import timedelta
+from pp_json import pp_json as pp
 
 def _prompt_drop_collection(*args, **kw):
     print "drop", args, kw
