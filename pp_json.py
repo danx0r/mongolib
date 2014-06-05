@@ -3,6 +3,8 @@
 #
 import urllib
 from datetime import datetime
+from pprint import pprint
+
 def is_atomic(x):
 #     return type(x) in (str, unicode, int, float, bool, datetime, type(None))
     return type(x) not in (dict, list)    
@@ -78,7 +80,11 @@ def pp_json(j, indent=0):
         pp_json_list(j, indent)
     else:
 #         pp_json_atom(j)
-        print "ERROR pp_json: not atom but not dict or list:", type(j), len(j), "bytes"
+        try:
+            if j.count():
+                pp_json_list(list(j), indent)
+        except:
+            pprint(j)
 
 if __name__ == "__main__":
     u = u'\u8349\u67f3\u8bba\u575b\u5730\u5740'
