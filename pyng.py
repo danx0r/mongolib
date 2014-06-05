@@ -48,14 +48,17 @@ def _parseQuery(ast, context, position=0):
 #         print "DEBUG Name", position, ast.getChildren()
         q = ast.getChildren()[0]
         if position > 0:                                #convert to Python object in specified namespace
-            if hasattr(__builtin__, q):
-                q = getattr(__builtin__, q)
-            else:
-                if context == None:
+            if context == None:
+                if hasattr(__builtin__, q):
+                    q = getattr(__builtin__, q)
+                else:
                     raise Exception("ERROR (mongolib): you need to specify context for %s, typically by adding 'locals()' to the call" % q)
-                if q not in context:
+            if q not in context:
+                if hasattr(__builtin__, q):
+                    q = getattr(__builtin__, q)
+                else:
                     raise Exception("ERROR: (mongolib): %s not found in specified context -- add globals()?" % q)
-                q = context[q]
+            q = context[q]
     elif ast.__class__ == Compare:
         a, op, b = ast.getChildren()
         op = COMPARE_OPS[op]

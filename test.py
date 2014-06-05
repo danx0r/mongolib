@@ -22,5 +22,6 @@ def test():
     print mng.query("test1", "rec['_id']", locals())[0]['fee']
     print mng.upsert("test1", "_id=='barker'")
     print mng.query("test1", "_id==~'bark'")[0]
-    print mng.query("test1", "~'arke'")[0]
+    id = 'arke'
+    print mng.query("test1", "~id", locals())[0]
 test()
