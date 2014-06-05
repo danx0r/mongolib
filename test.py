@@ -24,4 +24,5 @@ def test():
     print mng.query("test1", "_id==~'bark'")[0]
     id = 'arke'
     print mng.query("test1", "~id", locals())[0]
+    print mng.query("test1", "~ark")[0]
 test()
