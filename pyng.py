@@ -40,7 +40,8 @@ def _parseQuery(ast, context, position=0):
         return q
     if ast.__class__ == Const:
         if position == 0:
-            raise Exception("ERROR -- no const on left side")
+#             raise Exception("ERROR -- no const on left side")
+            q = {'_id': ast.getChildren()[0]}
 #         print "DEBUG Const", ast.getChildren()
         q = ast.getChildren()[0]
     elif ast.__class__ == Name:
