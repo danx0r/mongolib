@@ -19,4 +19,7 @@ def test():
     rec = mng.query("test1")[0]
     mng.update("test1", "_id==rec['_id']", locals(), fee="SUCCESS")
     print mng.query("test1", "_id==rec['_id']", locals())[0]['fee']
+    x = rec['_id']
+    print mng.parseQuery("x", locals())
+    print mng.query("test1", "rec['_id']", locals())[0]['fee']
 test()

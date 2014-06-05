@@ -140,9 +140,9 @@ def parseQuery(exp, context=None, context2=None):
     if p.__class__==Discard:
         p = p.getChildren()[0]
     q = _parseQuery(p, context)
-    if type(q) != dict:
-#         raise Exception("Error in parseQuery: didn't parse properly. +foo to test for exists")
-        q = {q: {'$exists': True}}                      #ach, always with the backwards compatibility
+    if type(q) != dict:                                 #shorthand for '_id'==
+        q = _parseQuery(p, context, 1)
+        q = {'_id': q}
     return q
 
 def _parseSelect(ast):
