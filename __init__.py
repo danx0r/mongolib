@@ -157,7 +157,7 @@ def _update(collection, query, context=None, **kw):
     else:
         ret = db.update(q, up, upsert = upsert, multi = multi)
 #     print ret, type(ret)
-    if ret['err']:
+    if 'err' in ret and ret['err']:
         pass
     elif ret['updatedExisting']:
         ret = ret['n']
